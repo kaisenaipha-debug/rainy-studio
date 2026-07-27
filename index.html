@@ -211,7 +211,23 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     if(audio.duration){progressBar.style.width=(audio.currentTime/audio.duration*100)+'%';curTime.textContent=fmt(audio.currentTime)}
   });
   audio.addEventListener('loadedmetadata',function(){totalTime.textContent=fmt(audio.duration)});
-  audio.addEventListener('ended',function(){setPlay(false);progressBar.style.width='0%';next()});
+  audio.addEventListener('ended',function(){
+    setPlay(false);progressBar.style.width='0%';
+    var n=(idx+1)%songs.length;
+    var s=songs[n];
+    audio.src=s.file;audio.load();
+    setTimeout(function(){
+      audio.play().then(function(){idx=n;setPlay(true);updateSong(n)}).catch(function(){});
+    },200);
+  });
+  function updateSong(n){
+    var s=songs[n];
+    curTitle.textContent=s.emoji+' '+s.name;curArtist.textContent=s.artist;
+    curTag.innerHTML='<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
+    document.querySelectorAll('.song-item').forEach(function(e,i){e.classList.toggle('active',i===n)});
+    updateMediaSession(s);
+    if(loop===1){idx--;}
+  }
   audio.addEventListener('error',function(){setPlay(false)});
 
   function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)+'').padStart(2,'0')}
