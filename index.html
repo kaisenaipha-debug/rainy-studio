@@ -2,222 +2,491 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>雨棚唱片 · 翻唱作品集</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>雨棚唱片</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   background: #0a0a0a;
   color: #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Serif SC', serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
   min-height: 100vh;
-  background-image: radial-gradient(ellipse at 50% 0%, #1a1410 0%, #0a0a0a 60%);
+  background-image: radial-gradient(ellipse at 50% 30%, #1a1410 0%, #0a0a0a 70%);
+  overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.container { max-width: 640px; margin: 0 auto; padding: 40px 20px 80px; }
-.header { text-align: center; margin-bottom: 40px; padding: 36px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.header h1 { font-size: 28px; font-weight: 700; letter-spacing: 4px; color: #fff; margin-bottom: 10px; }
-.header .subtitle { font-size: 12px; color: #888; letter-spacing: 3px; font-weight: 300; }
-.header .divider { width: 36px; height: 1px; background: linear-gradient(90deg, transparent, #555, transparent); margin: 14px auto; }
-.header .count { font-size: 12px; color: #555; }
 
-.song-card {
-  background: rgba(255,255,255,0.02);
+.container { max-width: 480px; margin: 0 auto; padding: 20px 16px 100px; }
+
+/* ====== Record Player ====== */
+.record-player {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 20px auto 30px;
+}
+
+/* Turntable base */
+.turntable-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #2a2218, #1a1410);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.04);
+}
+
+/* Spinning vinyl */
+.vinyl-disc {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  top: 30px;
+  left: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    #1a1a1a 0%,
+    #222 15%,
+    #1a1a1a 30%,
+    #111 50%,
+    #0d0d0d 70%,
+    #080808 100%
+  );
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.4);
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+/* Vinyl grooves */
+.vinyl-disc::before {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow:
+    inset 0 0 0 15px rgba(255,255,255,0.01),
+    inset 0 0 0 30px rgba(255,255,255,0.008),
+    inset 0 0 0 45px rgba(255,255,255,0.006),
+    inset 0 0 0 60px rgba(255,255,255,0.005);
+}
+
+/* Center label */
+.vinyl-label {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3a2820, #2a1a12);
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
-  margin-bottom: 14px;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-.song-card:active { background: rgba(255,255,255,0.06); }
-
-.song-link {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 18px 20px;
-  text-decoration: none;
-  color: inherit;
-  -webkit-tap-highlight-color: transparent;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
 }
 
-.song-number {
-  font-size: 11px;
-  font-weight: 600;
-  color: #555;
-  width: 28px;
-  flex-shrink: 0;
-  font-family: -apple-system, sans-serif;
+.vinyl-label .icon { font-size: 22px; line-height: 1; }
+.vinyl-label .text { font-size: 7px; color: #888; letter-spacing: 2px; margin-top: 4px; }
+
+/* Spin animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinning { animation: spin 2s linear infinite; }
+.paused { animation-play-state: paused; }
+
+/* Tone arm */
+.tone-arm {
+  position: absolute;
+  width: 120px;
+  height: 6px;
+  top: 40px;
+  right: -10px;
+  transform-origin: right center;
+  transform: rotate(-30deg);
+  z-index: 3;
+  transition: transform 0.5s ease;
+}
+.tone-arm.playing { transform: rotate(-12deg); }
+
+.tone-arm::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #888, #444);
+  top: 2px;
 }
 
-.song-cover {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #2a2018, #1a1410);
+.tone-arm::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: -2px;
+  top: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #c8a078, #8a6040);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.tone-arm-base {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  right: -8px;
+  top: -7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #666, #333);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 4;
+}
+
+/* Play/Pause button */
+.play-btn {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3a3028, #2a2018);
+  border: 2px solid rgba(200,160,120,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 14px;
-  flex-shrink: 0;
-  font-size: 18px;
-  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
+.play-btn:active { transform: translateX(-50%) scale(0.92); }
 
-.song-info { flex: 1; min-width: 0; }
-.song-title { font-size: 16px; font-weight: 600; color: #f0f0f0; margin-bottom: 3px; }
-.song-artist { font-size: 12px; color: #666; }
-.tag {
+/* ====== Now Playing ====== */
+.now-playing {
+  text-align: center;
+  margin: 20px 0 12px;
+}
+.now-playing .song-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f0f0f0;
+  margin-bottom: 4px;
+}
+.now-playing .song-artist {
+  font-size: 13px;
+  color: #777;
+}
+.now-playing .tag {
   display: inline-block;
   font-size: 10px;
-  padding: 1px 7px;
+  padding: 1px 8px;
   border-radius: 8px;
-  margin-left: 6px;
-  vertical-align: middle;
+  margin-top: 6px;
 }
-.tag-cover { background: rgba(80, 160, 200, 0.12); color: #60a0c8; }
-.tag-xichiang { background: rgba(200, 80, 80, 0.12); color: #e06060; }
+.tag-cover { background: rgba(80,160,200,0.12); color: #60a0c8; }
+.tag-xichiang { background: rgba(200,80,80,0.12); color: #e06060; }
 
-.song-duration { font-size: 11px; color: #555; font-family: -apple-system, sans-serif; flex-shrink: 0; margin-left: 8px; }
+.time-display {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #555;
+  font-family: monospace;
+  margin-top: 6px;
+}
 
-.play-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+/* Progress bar */
+.progress-container {
+  width: 100%;
+  height: 3px;
   background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  margin: 6px 0;
+  cursor: pointer;
+  position: relative;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #c8a078, #a08060);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s linear;
+}
+
+/* ====== Song List ====== */
+.song-list { margin-top: 24px; }
+
+.song-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-left: 10px;
-  font-size: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
   transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
-.song-card:active .play-icon { background: rgba(255,255,255,0.12); }
+.song-item:active { background: rgba(255,255,255,0.04); }
+.song-item.active {
+  background: rgba(200,160,120,0.06);
+  border: 1px solid rgba(200,160,120,0.1);
+}
 
-.footer { text-align: center; margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.04); }
-.footer p { font-size: 11px; color: #444; letter-spacing: 1px; }
-
-.tip {
-  text-align: center;
-  font-size: 12px;
+.song-num {
+  font-size: 11px;
   color: #555;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: rgba(255,255,255,0.02);
-  border-radius: 8px;
-  line-height: 1.6;
+  width: 24px;
+  flex-shrink: 0;
+}
+.song-emoji { font-size: 16px; margin-right: 12px; flex-shrink: 0; }
+.song-meta { flex: 1; min-width: 0; }
+.song-name { font-size: 14px; color: #d0d0d0; margin-bottom: 2px; }
+.song-item.active .song-name { color: #c8a078; }
+.song-artist-name { font-size: 11px; color: #666; }
+.song-time { font-size: 11px; color: #555; flex-shrink: 0; margin-left: 8px; }
+.song-item .playing-indicator {
+  width: 20px;
+  text-align: center;
+  font-size: 10px;
+  color: #c8a078;
+  flex-shrink: 0;
+  margin-left: 4px;
 }
 
-@media (max-width: 480px) {
-  .container { padding: 24px 16px 60px; }
-  .header h1 { font-size: 24px; }
-  .song-link { padding: 14px 16px; }
-}
+.footer { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.03); }
+.footer p { font-size: 10px; color: #444; letter-spacing: 2px; }
 </style>
 </head>
 <body>
+
 <div class="container">
-  
-  <div class="header">
-    <h1>🎵 雨棚唱片</h1>
-    <div class="subtitle">RAINY STUDIO RECORDS</div>
-    <div class="divider"></div>
-    <div class="count">6 首翻唱作品 · 闭眼沉浸系列</div>
-  </div>
 
-  <div class="tip">
-    👆 点击歌曲直接播放 · 微信内自动调用播放器
-  </div>
-
-  <!-- 1 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/57_cancel_cover.mp3" target="_self">
-      <div class="song-number">01</div>
-      <div class="song-cover">💔</div>
-      <div class="song-info">
-        <div class="song-title">第57次取消发送</div>
-        <div class="song-artist">周传雄 <span class="tag tag-cover">翻唱</span></div>
+  <!-- Record Player -->
+  <div class="record-player" id="recordPlayer">
+    <div class="turntable-base"></div>
+    <div class="vinyl-disc" id="vinylDisc">
+      <div class="vinyl-label">
+        <div class="icon">🎵</div>
+        <div class="text">雨棚唱片</div>
       </div>
-      <div class="song-duration">2:58</div>
-      <div class="play-icon">▶</div>
-    </a>
+    </div>
+    <div class="tone-arm" id="toneArm">
+      <div class="tone-arm-base"></div>
+    </div>
+    <div class="play-btn" id="playBtn">▶</div>
   </div>
 
-  <!-- 2 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/zhiyi_cover.mp3" target="_self">
-      <div class="song-number">02</div>
-      <div class="song-cover">💙</div>
-      <div class="song-info">
-        <div class="song-title">唯一</div>
-        <div class="song-artist">告五人 <span class="tag tag-cover">翻唱</span></div>
-      </div>
-      <div class="song-duration">4:19</div>
-      <div class="play-icon">▶</div>
-    </a>
+  <!-- Now Playing -->
+  <div class="now-playing" id="nowPlaying">
+    <div class="song-title" id="currentTitle">点击唱片开始</div>
+    <div class="song-artist" id="currentArtist">雨棚唱片</div>
+    <div id="currentTag"></div>
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="time-display">
+      <span id="currentTime">0:00</span>
+      <span id="totalTime">0:00</span>
+    </div>
   </div>
 
-  <!-- 3 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/qinghua_cover.mp3" target="_self">
-      <div class="song-number">03</div>
-      <div class="song-cover">🌿</div>
-      <div class="song-info">
-        <div class="song-title">青花</div>
-        <div class="song-artist">周传雄 <span class="tag tag-cover">翻唱</span></div>
-      </div>
-      <div class="song-duration">4:51</div>
-      <div class="play-icon">▶</div>
-    </a>
-  </div>
+  <!-- Song List -->
+  <div class="song-list" id="songList"></div>
 
-  <!-- 4 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/xin_cover.mp3" target="_self">
-      <div class="song-number">04</div>
-      <div class="song-cover">🌧️</div>
-      <div class="song-info">
-        <div class="song-title">我的心太乱</div>
-        <div class="song-artist">周传雄 <span class="tag tag-cover">翻唱</span></div>
-      </div>
-      <div class="song-duration">4:50</div>
-      <div class="play-icon">▶</div>
-    </a>
-  </div>
-
-  <!-- 5 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/huanghun_cover.mp3" target="_self">
-      <div class="song-number">05</div>
-      <div class="song-cover">🌅</div>
-      <div class="song-info">
-        <div class="song-title">黄昏</div>
-        <div class="song-artist">周传雄 <span class="tag tag-cover">翻唱</span></div>
-      </div>
-      <div class="song-duration">5:48</div>
-      <div class="play-icon">▶</div>
-    </a>
-  </div>
-
-  <!-- 6 -->
-  <div class="song-card">
-    <a class="song-link" href="audio/chiling_cover.mp3" target="_self">
-      <div class="song-number">06</div>
-      <div class="song-cover">🎭</div>
-      <div class="song-info">
-        <div class="song-title">赤伶</div>
-        <div class="song-artist">HITA <span class="tag tag-xichiang">戏腔</span></div>
-      </div>
-      <div class="song-duration">4:17</div>
-      <div class="play-icon">▶</div>
-    </a>
-  </div>
-
+  <!-- Footer -->
   <div class="footer">
     <p>RAINY STUDIO RECORDS</p>
-    <p style="margin-top:4px;font-size:10px;">闭眼沉浸翻唱系列</p>
   </div>
 
 </div>
+
+<!-- Hidden audio element -->
+<audio id="audioPlayer" preload="auto"></audio>
+
+<script>
+(function() {
+  var songs = [
+    { num: '01', emoji: '💔', name: '第57次取消发送', artist: '周传雄', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/57_cancel_cover.mp3', duration: '2:58' },
+    { num: '02', emoji: '💙', name: '唯一', artist: '告五人', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/zhiyi_cover.mp3', duration: '4:19' },
+    { num: '03', emoji: '🌿', name: '青花', artist: '周传雄', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/qinghua_cover.mp3', duration: '4:51' },
+    { num: '04', emoji: '🌧️', name: '我的心太乱', artist: '周传雄', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/xin_cover.mp3', duration: '4:50' },
+    { num: '05', emoji: '🌅', name: '黄昏', artist: '周传雄', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/huanghun_cover.mp3', duration: '5:48' },
+    { num: '06', emoji: '🎭', name: '赤伶', artist: 'HITA', tag: '戏腔', tagClass: 'tag-xichiang', file: 'audio/chiling_cover.mp3', duration: '4:17' }
+  ];
+
+  var audio = document.getElementById('audioPlayer');
+  var vinyl = document.getElementById('vinylDisc');
+  var toneArm = document.getElementById('toneArm');
+  var playBtn = document.getElementById('playBtn');
+  var progressBar = document.getElementById('progressBar');
+  var currentTime = document.getElementById('currentTime');
+  var totalTime = document.getElementById('totalTime');
+  var currentTitle = document.getElementById('currentTitle');
+  var currentArtist = document.getElementById('currentArtist');
+  var currentTag = document.getElementById('currentTag');
+  var songList = document.getElementById('songList');
+
+  var currentIndex = 0;
+  var isPlaying = false;
+
+  // Build song list
+  songs.forEach(function(song, i) {
+    var div = document.createElement('div');
+    div.className = 'song-item';
+    div.innerHTML =
+      '<span class="song-num">' + song.num + '</span>' +
+      '<span class="song-emoji">' + song.emoji + '</span>' +
+      '<div class="song-meta">' +
+        '<div class="song-name">' + song.name + '</div>' +
+        '<div class="song-artist-name">' + song.artist + ' <span class="tag ' + song.tagClass + '">' + song.tag + '</span></div>' +
+      '</div>' +
+      '<span class="song-time">' + song.duration + '</span>' +
+      '<span class="playing-indicator" id="indicator' + i + '"></span>';
+    div.addEventListener('click', function() { playSong(i); });
+    div.dataset.index = i;
+    songList.appendChild(div);
+  });
+
+  function playSong(index) {
+    if (index === currentIndex && isPlaying) { pause(); return; }
+    if (index === currentIndex && !isPlaying) { resume(); return; }
+    
+    currentIndex = index;
+    var song = songs[index];
+    
+    // Update UI
+    currentTitle.textContent = song.name;
+    currentArtist.textContent = song.artist;
+    currentTag.innerHTML = '<span class="tag ' + song.tagClass + '">' + song.tag + '</span>';
+    
+    // Highlight active song
+    document.querySelectorAll('.song-item').forEach(function(el, i) {
+      el.classList.toggle('active', i === index);
+      var ind = document.getElementById('indicator' + i);
+      if (i === index) ind.textContent = '♫'; else ind.textContent = '';
+    });
+    
+    // Load and play
+    audio.src = song.file;
+    audio.load();
+    audio.play().then(function() {
+      isPlaying = true;
+      vinyl.classList.add('spinning');
+      toneArm.classList.add('playing');
+      playBtn.textContent = '⏸';
+    }).catch(function(e) {
+      console.log('Play error:', e);
+      isPlaying = false;
+      playBtn.textContent = '▶';
+    });
+  }
+
+  function pause() {
+    audio.pause();
+    isPlaying = false;
+    vinyl.classList.remove('spinning');
+    toneArm.classList.remove('playing');
+    playBtn.textContent = '▶';
+  }
+
+  function resume() {
+    audio.play().then(function() {
+      isPlaying = true;
+      vinyl.classList.add('spinning');
+      toneArm.classList.add('playing');
+      playBtn.textContent = '⏸';
+    });
+  }
+
+  // Play/pause button
+  playBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (isPlaying) { pause(); }
+    else {
+      if (audio.src) resume();
+      else playSong(0);
+    }
+  });
+
+  // Click vinyl to play/pause
+  vinyl.addEventListener('click', function() {
+    if (isPlaying) pause();
+    else {
+      if (audio.src) resume();
+      else playSong(0);
+    }
+  });
+
+  // Progress bar click to seek
+  document.getElementById('progressContainer').addEventListener('click', function(e) {
+    var rect = this.getBoundingClientRect();
+    var pct = (e.clientX - rect.left) / rect.width;
+    if (audio.duration) {
+      audio.currentTime = pct * audio.duration;
+    }
+  });
+
+  // Time update
+  audio.addEventListener('timeupdate', function() {
+    if (audio.duration) {
+      var pct = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = pct + '%';
+      currentTime.textContent = formatTime(audio.currentTime);
+    }
+  });
+
+  audio.addEventListener('loadedmetadata', function() {
+    totalTime.textContent = formatTime(audio.duration);
+  });
+
+  // Auto-next when song ends
+  audio.addEventListener('ended', function() {
+    vinyl.classList.remove('spinning');
+    toneArm.classList.remove('playing');
+    playBtn.textContent = '▶';
+    isPlaying = false;
+    progressBar.style.width = '0%';
+    
+    var next = (currentIndex + 1) % songs.length;
+    playSong(next);
+  });
+
+  audio.addEventListener('error', function(e) {
+    console.log('Audio error');
+    isPlaying = false;
+    vinyl.classList.remove('spinning');
+    toneArm.classList.remove('playing');
+    playBtn.textContent = '▶';
+  });
+
+  function formatTime(secs) {
+    if (!secs || isNaN(secs)) return '0:00';
+    var m = Math.floor(secs / 60);
+    var s = Math.floor(secs % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Auto-play first song on user interaction
+  var firstTap = true;
+  document.addEventListener('click', function once() {
+    if (firstTap && songs.length > 0) {
+      firstTap = false;
+      // Don't auto-play, just be ready
+    }
+  }, { once: true });
+})();
+</script>
 </body>
 </html>
