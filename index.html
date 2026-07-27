@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨棚唱片 · 翻唱作品集</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;600&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Noto Serif SC', serif;
+  min-height: 100vh;
+  background-image: radial-gradient(ellipse at 50% 0%, #1a1410 0%, #0a0a0a 60%);
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 40px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.header .subtitle {
+  font-size: 13px;
+  color: #888;
+  letter-spacing: 2px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+}
+
+.header .divider {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #555, transparent);
+  margin: 16px auto;
+}
+
+.header .count {
+  font-size: 12px;
+  color: #555;
+  font-family: 'Inter', sans-serif;
+}
+
+.song-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.song-card:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.song-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.song-number {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #555;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.song-details {
+  flex: 1;
+}
+
+.song-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 2px;
+}
+
+.song-artist {
+  font-size: 12px;
+  color: #777;
+  font-family: 'Inter', sans-serif;
+}
+
+.song-artist .tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 8px;
+  background: rgba(200, 160, 120, 0.12);
+  color: #c8a078;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+
+.song-tag-xichiang {
+  background: rgba(180, 80, 80, 0.15) !important;
+  color: #e06060 !important;
+}
+
+.song-tag-cover {
+  background: rgba(80, 160, 200, 0.12) !important;
+  color: #60a0c8 !important;
+}
+
+.song-duration {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #555;
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+audio {
+  width: 100%;
+  height: 40px;
+  outline: none;
+}
+
+audio::-webkit-media-controls-panel {
+  background: rgba(255,255,255,0.04);
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+  color: #888;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+}
+
+audio::-webkit-media-controls-play-button {
+  background: rgba(200,160,120,0.15);
+  border-radius: 50%;
+}
+
+audio::-webkit-media-controls-timeline {
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  height: 3px;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.footer p {
+  font-size: 11px;
+  color: #444;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 1px;
+}
+
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 24px;
+  gap: 8px;
+}
+
+.qr-section img {
+  border-radius: 12px;
+  width: 140px;
+  height: 140px;
+  opacity: 0.85;
+}
+
+.qr-section .qr-label {
+  font-size: 11px;
+  color: #555;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 24px 16px 60px; }
+  .header h1 { font-size: 24px; }
+  .song-card { padding: 16px; }
+  .song-title { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="header">
+    <h1>🎵 雨棚唱片</h1>
+    <div class="subtitle">RAINY STUDIO RECORDS</div>
+    <div class="divider"></div>
+    <div class="count">6 首翻唱作品 · 闭眼沉浸系列</div>
+  </div>
+
+  <!-- 1. 第57次取消发送 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">01</div>
+      <div class="song-details">
+        <div class="song-title">第57次取消发送</div>
+        <div class="song-artist">周传雄 <span class="tag song-tag-cover">翻唱</span></div>
+      </div>
+      <div class="song-duration">2:58</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/57_cancel_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 2. 唯一 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">02</div>
+      <div class="song-details">
+        <div class="song-title">唯一</div>
+        <div class="song-artist">告五人 <span class="tag song-tag-cover">翻唱</span></div>
+      </div>
+      <div class="song-duration">4:19</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/zhiyi_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 3. 青花 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">03</div>
+      <div class="song-details">
+        <div class="song-title">青花</div>
+        <div class="song-artist">周传雄 <span class="tag song-tag-cover">翻唱</span></div>
+      </div>
+      <div class="song-duration">4:51</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/qinghua_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 4. 我的心太乱 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">04</div>
+      <div class="song-details">
+        <div class="song-title">我的心太乱</div>
+        <div class="song-artist">周传雄 <span class="tag song-tag-cover">翻唱</span></div>
+      </div>
+      <div class="song-duration">4:50</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/xin_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 5. 黄昏 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">05</div>
+      <div class="song-details">
+        <div class="song-title">黄昏</div>
+        <div class="song-artist">周传雄 <span class="tag song-tag-cover">翻唱</span></div>
+      </div>
+      <div class="song-duration">5:48</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/huanghun_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 6. 赤伶 -->
+  <div class="song-card">
+    <div class="song-info">
+      <div class="song-number">06</div>
+      <div class="song-details">
+        <div class="song-title">赤伶</div>
+        <div class="song-artist">HITA <span class="tag song-tag-xichiang">戏腔</span></div>
+      </div>
+      <div class="song-duration">4:17</div>
+    </div>
+    <audio controls preload="none">
+      <source src="audio/chiling_cover.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <div class="footer">
+    <div class="qr-section" id="qrSection">
+      <img id="qrCode" alt="QR Code">
+      <div class="qr-label">扫一扫 · 听全部</div>
+    </div>
+    <p style="margin-top: 20px;">RAINY STUDIO RECORDS · 闭眼沉浸翻唱系列</p>
+  </div>
+
+</div>
+
+<script>
+// Generate QR code for this page's URL
+(function() {
+  var url = window.location.href;
+  var qrImg = document.getElementById('qrCode');
+  qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(url);
+  qrImg.onerror = function() { qrImg.style.display = 'none'; };
+})();
+</script>
+
+</body>
+</html>
