@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>雨棚唱片</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -267,6 +270,17 @@ body {
 
 .footer { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.03); }
 .footer p { font-size: 10px; color: #444; letter-spacing: 2px; }
+.float-tip {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.6;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  text-align: left;
+}
 </style>
 </head>
 <body>
@@ -307,6 +321,10 @@ body {
 
   <!-- Footer -->
   <div class="footer">
+    <div class="float-tip">
+      💡 微信内退出后音乐会停，建议使用「浮窗」功能：<br>
+      右上角 ··· → 浮窗 → 音乐继续播放
+    </div>
     <p>RAINY STUDIO RECORDS</p>
   </div>
 
@@ -317,6 +335,28 @@ body {
 
 <script>
 (function() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+  }
+
+  // Media Session API - lock screen controls
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: '雨棚唱片',
+      artist: '闭眼沉浸翻唱系列',
+      album: '雨棚唱片'
+    });
+    navigator.mediaSession.setActionHandler('play', function() { resume(); });
+    navigator.mediaSession.setActionHandler('pause', function() { pause(); });
+    navigator.mediaSession.setActionHandler('previoustrack', function() {
+      playSong(Math.max(0, currentIndex - 1));
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', function() {
+      playSong((currentIndex + 1) % songs.length);
+    });
+  }
+
   var songs = [
     { num: '01', emoji: '💔', name: '第57次取消发送', artist: '周传雄', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/57_cancel_cover.mp3', duration: '2:58' },
     { num: '02', emoji: '💙', name: '唯一', artist: '告五人', tag: '翻唱', tagClass: 'tag-cover', file: 'audio/zhiyi_cover.mp3', duration: '4:19' },
@@ -377,6 +417,15 @@ body {
       var ind = document.getElementById('indicator' + i);
       if (i === index) ind.textContent = '♫'; else ind.textContent = '';
     });
+    
+    // Update lock screen info
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.name,
+        artist: song.artist + ' · ' + song.tag,
+        album: '雨棚唱片'
+      });
+    }
     
     // Load and play
     audio.src = song.file;
