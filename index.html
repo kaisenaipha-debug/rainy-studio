@@ -14,122 +14,80 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  background: #0a0a0a; color: #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
-  min-height: 100vh;
-  background-image: radial-gradient(ellipse at 50% 30%, #1a1410 0%, #0a0a0a 70%);
-  overflow-x: hidden; -webkit-tap-highlight-color: transparent; user-select: none;
-}
-.container { max-width: 480px; margin: 0 auto; padding: 20px 16px 100px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;min-height:100vh;background-image:radial-gradient(ellipse at 50% 30%,#1a1410 0%,#0a0a0a 70%);overflow-x:hidden;-webkit-tap-highlight-color:transparent;user-select:none}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 100px}
 
-/* Record Player */
-.record-player { position: relative; width: 260px; height: 260px; margin: 16px auto 24px; }
-.turntable-base { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(145deg, #2a2218, #1a1410); box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.04); }
-.vinyl-disc { position: absolute; width: 200px; height: 200px; top: 30px; left: 30px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #222 15%, #1a1a1a 30%, #111 50%, #0d0d0d 70%, #080808 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.3s; }
-.vinyl-disc::before { content: ''; position: absolute; inset: 15%; border-radius: 50%; border: 1px solid rgba(255,255,255,0.02); box-shadow: inset 0 0 0 15px rgba(255,255,255,0.01), inset 0 0 0 30px rgba(255,255,255,0.008), inset 0 0 0 45px rgba(255,255,255,0.006), inset 0 0 0 60px rgba(255,255,255,0.005); }
-.vinyl-label { position: absolute; width: 72px; height: 72px; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: linear-gradient(135deg, #3a2820, #2a1a12); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 2; }
-.vinyl-label .icon { font-size: 20px; line-height: 1; }
-.vinyl-label .text { font-size: 7px; color: #888; letter-spacing: 2px; margin-top: 3px; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.spinning { animation: spin 2s linear infinite; }
-.tone-arm { position: absolute; width: 110px; height: 6px; top: 35px; right: 0px; transform-origin: right center; transform: rotate(-35deg); z-index: 3; transition: transform 0.5s ease; }
-.tone-arm.playing { transform: rotate(-15deg); }
-.tone-arm::before { content: ''; position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, #888, #444); top: 2px; }
-.tone-arm::after { content: ''; position: absolute; width: 12px; height: 12px; left: -2px; top: -3px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #c8a078, #8a6040); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
-.tone-arm-base { position: absolute; width: 18px; height: 18px; right: -6px; top: -6px; border-radius: 50%; background: linear-gradient(135deg, #666, #333); box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 4; }
-.tone-arm-icon {
-  position: absolute; width: 22px; height: 22px; border-radius: 50%;
-  background: linear-gradient(135deg, #c8a078, #a08060);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: #0a0a0a; z-index: 5;
-  left: 10px; top: -8px; cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-.tone-arm-icon:active { transform: scale(0.85); }
+.record-player{position:relative;width:260px;height:260px;margin:16px auto 24px}
+.turntable-base{position:absolute;inset:0;border-radius:50%;background:linear-gradient(145deg,#2a2218,#1a1410);box-shadow:0 20px 60px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.04)}
+.vinyl-disc{position:absolute;width:200px;height:200px;top:30px;left:30px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1a1a1a 0,#222 15%,#1a1a1a 30%,#111 50%,#0d0d0d 70%,#080808 100%);box-shadow:0 4px 20px rgba(0,0,0,.6),inset 0 0 40px rgba(0,0,0,.4);cursor:pointer}
+.vinyl-disc::before{content:'';position:absolute;inset:15%;border-radius:50%;border:1px solid rgba(255,255,255,.02);box-shadow:inset 0 0 0 15px rgba(255,255,255,.01),inset 0 0 0 30px rgba(255,255,255,.008),inset 0 0 0 45px rgba(255,255,255,.006),inset 0 0 0 60px rgba(255,255,255,.005)}
+.vinyl-label{position:absolute;width:72px;height:72px;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;background:linear-gradient(135deg,#3a2820,#2a1a12);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:2}
+.vinyl-label .icon{font-size:20px;line-height:1}
+.vinyl-label .text{font-size:7px;color:#888;letter-spacing:2px;margin-top:3px}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spinning{animation:spin 2s linear infinite}
+.tone-arm{position:absolute;width:110px;height:6px;top:35px;right:0;transform-origin:right center;transform:rotate(-35deg);z-index:3;transition:transform .5s ease}
+.tone-arm.playing{transform:rotate(-15deg)}
+.tone-arm::before{content:'';position:absolute;width:100%;height:2px;background:linear-gradient(90deg,#888,#444);top:2px}
+.tone-arm::after{content:'';position:absolute;width:12px;height:12px;left:-2px;top:-3px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#c8a078,#8a6040);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.tone-arm-base{position:absolute;width:18px;height:18px;right:-6px;top:-6px;border-radius:50%;background:linear-gradient(135deg,#666,#333);box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:4}
+.tone-arm-icon{position:absolute;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#c8a078,#a08060);display:flex;align-items:center;justify-content:center;font-size:10px;color:#0a0a0a;z-index:5;left:10px;top:-8px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:all .2s}
+.tone-arm-icon:active{transform:scale(.85)}
 
-/* Controls bar - no play button */
-.controls-bar { display: flex; align-items: center; justify-content: center; gap: 24px; margin: 10px 0 8px; }
-.ctrl-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; cursor: pointer; transition: all 0.2s; color: #999;
-  -webkit-tap-highlight-color: transparent;
-}
-.ctrl-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.92); }
-.ctrl-btn.active { color: #c8a078; border-color: rgba(200,160,120,0.2); }
+.controls-bar{display:flex;align-items:center;justify-content:center;gap:24px;margin:10px 0 8px}
+.ctrl-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .2s;color:#999}
+.ctrl-btn:active{background:rgba(255,255,255,.08);transform:scale(.92)}
+.ctrl-btn.active{color:#c8a078;border-color:rgba(200,160,120,.2)}
 
-/* Now Playing */
-.now-playing { text-align: center; margin: 4px 0 8px; }
-.now-playing .song-title { font-size: 18px; font-weight: 600; color: #f0f0f0; margin-bottom: 3px; }
-.now-playing .song-artist { font-size: 12px; color: #777; }
-.tag { display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 8px; margin-top: 4px; }
-.tag-cover { background: rgba(80,160,200,0.12); color: #60a0c8; }
-.tag-xichiang { background: rgba(200,80,80,0.12); color: #e06080; }
-.time-display { display: flex; justify-content: space-between; font-size: 11px; color: #555; font-family: monospace; margin: 2px 0; }
-.progress-container { width: 100%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin: 4px 0; cursor: pointer; position: relative; }
-.progress-bar { height: 100%; background: linear-gradient(90deg, #c8a078, #a08060); border-radius: 2px; width: 0%; transition: width 0.3s linear; }
+.now-playing{text-align:center;margin:4px 0 8px}
+.now-playing .song-title{font-size:18px;font-weight:600;color:#f0f0f0;margin-bottom:3px}
+.now-playing .song-artist{font-size:12px;color:#777}
+.tag{display:inline-block;font-size:10px;padding:1px 8px;border-radius:8px;margin-top:4px}
+.tag-cover{background:rgba(80,160,200,.12);color:#60a0c8}
+.tag-xichiang{background:rgba(200,80,80,.12);color:#e06080}
+.time-display{display:flex;justify-content:space-between;font-size:11px;color:#555;font-family:monospace;margin:2px 0}
+.progress-container{width:100%;height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin:4px 0;cursor:pointer;position:relative}
+.progress-bar{height:100%;background:linear-gradient(90deg,#c8a078,#a08060);border-radius:2px;width:0%;transition:width .3s linear}
 
-/* Song List */
-.song-list { margin-top: 16px; }
-.song-item { display: flex; align-items: center; padding: 12px 14px; border-radius: 10px; margin-bottom: 2px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
-.song-item:active { background: rgba(255,255,255,0.04); }
-.song-item.active { background: rgba(200,160,120,0.06); border: 1px solid rgba(200,160,120,0.1); }
-.song-num { font-size: 11px; color: #555; width: 22px; flex-shrink: 0; }
-.song-emoji { font-size: 14px; margin-right: 10px; flex-shrink: 0; }
-.song-meta { flex: 1; min-width: 0; }
-.song-name { font-size: 13px; color: #d0d0d0; margin-bottom: 1px; }
-.song-item.active .song-name { color: #c8a078; }
-.song-artist-name { font-size: 11px; color: #666; }
-.song-time { font-size: 11px; color: #555; flex-shrink: 0; margin-left: 6px; }
+.song-list{margin-top:16px}
+.song-item{display:flex;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:2px;cursor:pointer;transition:all .2s}
+.song-item:active{background:rgba(255,255,255,.04)}
+.song-item.active{background:rgba(200,160,120,.06);border:1px solid rgba(200,160,120,.1)}
+.song-num{font-size:11px;color:#555;width:22px;flex-shrink:0}
+.song-emoji{font-size:14px;margin-right:10px;flex-shrink:0}
+.song-meta{flex:1;min-width:0}
+.song-name{font-size:13px;color:#d0d0d0;margin-bottom:1px}
+.song-item.active .song-name{color:#c8a078}
+.song-artist-name{font-size:11px;color:#666}
+.song-time{font-size:11px;color:#555;flex-shrink:0;margin-left:6px}
 
-/* Request Section */
-.request-section {
-  margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05); border-radius: 14px;
-}
-.request-section .req-title { font-size: 13px; color: #888; text-align: center; margin-bottom: 12px; letter-spacing: 1px; }
-.req-input-group { display: flex; gap: 8px; }
-.req-input {
-  flex: 1; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03); color: #e0e0e0; font-size: 14px; outline: none;
-  font-family: inherit; transition: border-color 0.2s;
-}
-.req-input:focus { border-color: rgba(200,160,120,0.3); }
-.req-input::placeholder { color: #555; }
-.req-btn {
-  padding: 10px 18px; border-radius: 10px; border: none;
-  background: linear-gradient(135deg, #c8a078, #a08060); color: #0a0a0a;
-  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  transition: all 0.2s; font-family: inherit;
-}
-.req-btn:active { transform: scale(0.95); opacity: 0.9; }
-.req-btn:disabled { opacity: 0.3; }
-.req-toast {
-  text-align: center; font-size: 12px; color: #c8a078; margin-top: 10px;
-  opacity: 0; transition: opacity 0.3s; max-height: 0; overflow: hidden;
-}
-.req-toast.show { opacity: 1; max-height: 40px; }
+.request-section{margin-top:24px;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:14px}
+.req-title{font-size:13px;color:#888;text-align:center;margin-bottom:12px;letter-spacing:1px}
+.req-input-group{display:flex;gap:8px}
+.req-input{flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#e0e0e0;font-size:14px;outline:none;font-family:inherit}
+.req-input:focus{border-color:rgba(200,160,120,.3)}
+.req-input::placeholder{color:#555}
+.req-btn{padding:10px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#c8a078,#a08060);color:#0a0a0a;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit}
+.req-btn:active{transform:scale(.95);opacity:.9}
+.req-btn:disabled{opacity:.3}
+.req-toast{text-align:center;font-size:12px;color:#c8a078;margin-top:8px;opacity:0;transition:opacity .3s;max-height:0;overflow:hidden}
+.req-toast.show{opacity:1;max-height:40px}
+.req-list{margin-top:14px}
+.req-list-title{font-size:12px;color:#777;margin-bottom:8px;letter-spacing:1px}
+.req-list-empty{font-size:12px;color:#555;text-align:center;padding:12px}
+.req-item{display:flex;align-items:center;padding:8px 12px;margin-bottom:4px;background:rgba(255,255,255,.02);border-radius:8px;border-left:2px solid rgba(200,160,120,.2)}
+.req-item .req-song{flex:1;font-size:13px;color:#d0d0d0}
+.req-item .req-time{font-size:10px;color:#555;margin-left:4px;white-space:nowrap}
 
-.footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.03); }
-.footer p { font-size: 10px; color: #444; letter-spacing: 2px; }
-.float-tip { font-size: 11px; color: #666; line-height: 1.6; padding: 10px 14px; margin-bottom: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); text-align: left; }
-
-@media (max-width: 480px) {
-  .container { padding: 16px 14px 80px; }
-  .record-player { width: 220px; height: 220px; }
-  .vinyl-disc { width: 170px; height: 170px; top: 25px; left: 25px; }
-}
+.footer{text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.03)}
+.footer p{font-size:10px;color:#444;letter-spacing:2px}
+.float-tip{font-size:11px;color:#666;line-height:1.6;padding:10px 14px;margin-bottom:12px;background:rgba(255,255,255,.02);border-radius:10px;border:1px solid rgba(255,255,255,.04);text-align:left}
+@media(max-width:480px){.container{padding:16px 14px 80px}.record-player{width:220px;height:220px}.vinyl-disc{width:170px;height:170px;top:25px;left:25px}}
 </style>
 </head>
 <body>
 <div class="container">
-
-  <!-- Record Player -->
   <div class="record-player">
     <div class="turntable-base"></div>
     <div class="vinyl-disc" id="vinylDisc">
@@ -140,15 +98,11 @@ body {
       <div class="tone-arm-base"></div>
     </div>
   </div>
-
-  <!-- Controls -->
   <div class="controls-bar">
     <div class="ctrl-btn" id="prevBtn">⏮</div>
     <div class="ctrl-btn" id="nextBtn">⏭</div>
-    <div class="ctrl-btn" id="loopBtn" title="循环模式">🔁</div>
+    <div class="ctrl-btn" id="loopBtn">🔁</div>
   </div>
-
-  <!-- Now Playing -->
   <div class="now-playing">
     <div class="song-title" id="currentTitle">🎵 雨棚唱片</div>
     <div class="song-artist" id="currentArtist">点击播放</div>
@@ -162,18 +116,21 @@ body {
       <span id="totalTime">0:00</span>
     </div>
   </div>
-
-  <!-- Song List -->
   <div class="song-list" id="songList"></div>
 
-  <!-- Request Song -->
+  <!-- 点歌台 -->
   <div class="request-section">
-    <div class="req-title">🎤 点歌台 · 输入歌名翻唱</div>
+    <div class="req-title">🎤 点歌台 · 输入歌名我们帮你翻唱</div>
     <div class="req-input-group">
-      <input class="req-input" id="reqInput" placeholder="歌名 + 歌手（如：黄昏 周传雄）" maxlength="50">
+      <input class="req-input" id="reqInput" placeholder="歌名 + 歌手" maxlength="50">
       <button class="req-btn" id="reqBtn">点歌</button>
     </div>
-    <div class="req-toast" id="reqToast">✅ 翻唱请求已发出！制作人收到后尽快完成</div>
+    <div class="req-toast" id="reqToast"></div>
+    <div class="req-list" id="reqList" style="display:none">
+      <div class="req-list-title">📋 大家点了这些歌</div>
+      <div id="reqListItems"></div>
+    </div>
+    <div class="req-list-empty" id="reqListEmpty" style="display:block">还没有人点歌，快来当第一个吧</div>
   </div>
 
   <div class="footer">
@@ -181,193 +138,150 @@ body {
     <p>RAINY STUDIO RECORDS</p>
   </div>
 </div>
-
 <audio id="audioPlayer" preload="auto"></audio>
-
 <script>
-(function() {
+(function(){
   var songs = [
-    { num:'01', emoji:'💔', name:'第57次取消发送', artist:'周传雄', tag:'翻唱', tagClass:'tag-cover', file:'audio/57_cancel_cover.mp3', dur:'2:58' },
-    { num:'02', emoji:'💙', name:'唯一', artist:'告五人', tag:'翻唱', tagClass:'tag-cover', file:'audio/zhiyi_cover.mp3', dur:'4:19' },
-    { num:'03', emoji:'🌿', name:'青花', artist:'周传雄', tag:'翻唱', tagClass:'tag-cover', file:'audio/qinghua_cover.mp3', dur:'4:51' },
-    { num:'04', emoji:'🌧️', name:'我的心太乱', artist:'周传雄', tag:'翻唱', tagClass:'tag-cover', file:'audio/xin_cover.mp3', dur:'4:50' },
-    { num:'05', emoji:'🌅', name:'黄昏', artist:'周传雄', tag:'翻唱', tagClass:'tag-cover', file:'audio/huanghun_cover.mp3', dur:'5:48' },
-    { num:'06', emoji:'🎭', name:'赤伶', artist:'HITA', tag:'戏腔', tagClass:'tag-xichiang', file:'audio/chiling_cover.mp3', dur:'4:17' },
-    { num:'07', emoji:'☕', name:'时间煮雨', artist:'郁可唯', tag:'翻唱', tagClass:'tag-cover', file:'audio/sjzy_cover.mp3', dur:'4:01' }
+    {num:'01',emoji:'💔',name:'第57次取消发送',artist:'周传雄',tag:'翻唱',tagClass:'tag-cover',file:'audio/57_cancel_cover.mp3',dur:'2:58'},
+    {num:'02',emoji:'💙',name:'唯一',artist:'告五人',tag:'翻唱',tagClass:'tag-cover',file:'audio/zhiyi_cover.mp3',dur:'4:19'},
+    {num:'03',emoji:'🌿',name:'青花',artist:'周传雄',tag:'翻唱',tagClass:'tag-cover',file:'audio/qinghua_cover.mp3',dur:'4:51'},
+    {num:'04',emoji:'🌧️',name:'我的心太乱',artist:'周传雄',tag:'翻唱',tagClass:'tag-cover',file:'audio/xin_cover.mp3',dur:'4:50'},
+    {num:'05',emoji:'🌅',name:'黄昏',artist:'周传雄',tag:'翻唱',tagClass:'tag-cover',file:'audio/huanghun_cover.mp3',dur:'5:48'},
+    {num:'06',emoji:'🎭',name:'赤伶',artist:'HITA',tag:'戏腔',tagClass:'tag-xichiang',file:'audio/chiling_cover.mp3',dur:'4:17'},
+    {num:'07',emoji:'☕',name:'时间煮雨',artist:'郁可唯',tag:'翻唱',tagClass:'tag-cover',file:'audio/sjzy_cover.mp3',dur:'4:01'}
   ];
 
-  var audio = document.getElementById('audioPlayer');
-  var vinyl = document.getElementById('vinylDisc');
-  var toneArm = document.getElementById('toneArm');
-  var toneArmIcon = document.getElementById('toneArmIcon');
-  var GH_TOKEN = 'gho_Jp2YztI3XHZDv2t9mORz0tPL8cDCX0o';
-  var prevBtn = document.getElementById('prevBtn');
-  var nextBtn = document.getElementById('nextBtn');
-  var loopBtn = document.getElementById('loopBtn');
-  var progressBar = document.getElementById('progressBar');
-  var currentTime = document.getElementById('currentTime');
-  var totalTime = document.getElementById('totalTime');
-  var loopStatus = document.getElementById('loopStatus');
-  var currentTitle = document.getElementById('currentTitle');
-  var currentArtist = document.getElementById('currentArtist');
-  var currentTag = document.getElementById('currentTag');
-  var songList = document.getElementById('songList');
-  var reqInput = document.getElementById('reqInput');
-  var reqBtn = document.getElementById('reqBtn');
-  var reqToast = document.getElementById('reqToast');
-
-  var currentIndex = 0, isPlaying = false, loopMode = 0; // 0=列表循环, 1=单曲循环
-  var loopIcons = ['🔁', '🔂'];
+  var audio=document.getElementById('audioPlayer'),vinyl=document.getElementById('vinylDisc'),toneArm=document.getElementById('toneArm'),toneArmIcon=document.getElementById('toneArmIcon'),prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn'),loopBtn=document.getElementById('loopBtn'),progressBar=document.getElementById('progressBar'),curTime=document.getElementById('currentTime'),totalTime=document.getElementById('totalTime'),loopStatus=document.getElementById('loopStatus'),curTitle=document.getElementById('currentTitle'),curArtist=document.getElementById('currentArtist'),curTag=document.getElementById('currentTag'),songList=document.getElementById('songList'),reqInput=document.getElementById('reqInput'),reqBtn=document.getElementById('reqBtn'),reqToast=document.getElementById('reqToast'),reqList=document.getElementById('reqList'),reqListEmpty=document.getElementById('reqListEmpty'),reqItems=document.getElementById('reqListItems');
+  var idx=0,playing=false,loop=0;
+  var GH_TOKEN='gho_Jp2YztI3XHZDv2t9mORz0tPL8cDCX0o';
 
   // Build song list
-  songs.forEach(function(s, i) {
-    var d = document.createElement('div');
-    d.className = 'song-item'; d.dataset.index = i;
-    d.innerHTML = '<span class="song-num">'+s.num+'</span><span class="song-emoji">'+s.emoji+'</span><div class="song-meta"><div class="song-name">'+s.name+'</div><div class="song-artist-name">'+s.artist+'</div></div><span class="song-time">'+s.dur+'</span>';
-    d.addEventListener('click', function(){ playSong(i); });
+  songs.forEach(function(s,i){
+    var d=document.createElement('div');
+    d.className='song-item';d.dataset.index=i;
+    d.innerHTML='<span class="song-num">'+s.num+'</span><span class="song-emoji">'+s.emoji+'</span><div class="song-meta"><div class="song-name">'+s.name+'</div><div class="song-artist-name">'+s.artist+'</div></div><span class="song-time">'+s.dur+'</span>';
+    d.addEventListener('click',function(){play(i)});
     songList.appendChild(d);
   });
 
-  function playSong(idx) {
-    if (idx === currentIndex && isPlaying) { pause(); return; }
-    if (idx === currentIndex && !isPlaying) { resume(); return; }
-    currentIndex = idx;
-    var s = songs[idx];
-    
-    currentTitle.textContent = s.emoji + ' ' + s.name;
-    currentArtist.textContent = s.artist;
-    currentTag.innerHTML = '<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
-    
-    document.querySelectorAll('.song-item').forEach(function(el, i){
-      el.classList.toggle('active', i === idx);
-    });
-    
+  function play(i){
+    if(i===idx&&playing){pause();return}
+    if(i===idx&&!playing){resume();return}
+    idx=i;var s=songs[i];
+    curTitle.textContent=s.emoji+' '+s.name;curArtist.textContent=s.artist;
+    curTag.innerHTML='<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
+    document.querySelectorAll('.song-item').forEach(function(e,j){e.classList.toggle('active',j===i)});
     updateMediaSession(s);
-    audio.src = s.file; audio.load();
-    audio.play().then(function(){ setPlaying(true); }).catch(function(){ setPlaying(false); });
+    audio.src=s.file;audio.load();
+    audio.play().then(function(){setPlay(true)}).catch(function(){setPlay(false)});
   }
 
-  function setPlaying(state) {
-    isPlaying = state;
-    if (state) { vinyl.classList.add('spinning'); toneArm.classList.add('playing'); toneArmIcon.textContent = '⏸'; }
-    else { vinyl.classList.remove('spinning'); toneArm.classList.remove('playing'); toneArmIcon.textContent = '▶'; }
+  function setPlay(state){
+    playing=state;
+    if(state){vinyl.classList.add('spinning');toneArm.classList.add('playing');toneArmIcon.textContent='⏸'}
+    else{vinyl.classList.remove('spinning');toneArm.classList.remove('playing');toneArmIcon.textContent='▶'}
   }
 
-  function pause() { audio.pause(); setPlaying(false); }
-  function resume() { audio.play().then(function(){ setPlaying(true); }).catch(function(){}); }
-  function next() { playSong((currentIndex + 1) % songs.length); }
-  function prev() { playSong((currentIndex - 1 + songs.length) % songs.length); }
+  function pause(){audio.pause();setPlay(false)}
+  function resume(){audio.play().then(function(){setPlay(true)}).catch(function(){})}
+  function next(){play((idx+1)%songs.length)}
+  function prev(){play((idx-1+songs.length)%songs.length)}
 
-  // Tone arm click = play/pause
-  toneArmIcon.addEventListener('click', function(e){
+  toneArmIcon.addEventListener('click',function(e){
     e.stopPropagation();
-    if (isPlaying) pause();
-    else { if (audio.src) resume(); else playSong(0); }
+    if(playing)pause();else{if(audio.src)resume();else play(0)}
   });
-  prevBtn.addEventListener('click', prev);
-  nextBtn.addEventListener('click', next);
-  // Vinyl click also play/pause
-  vinyl.addEventListener('click', function(){
-    if (isPlaying) pause();
-    else { if (audio.src) resume(); else playSong(0); }
+  prevBtn.addEventListener('click',prev);nextBtn.addEventListener('click',next);
+  vinyl.addEventListener('click',function(){
+    if(playing)pause();else{if(audio.src)resume();else play(0)}
   });
 
-  // Loop toggle
-  loopBtn.addEventListener('click', function(){
-    loopMode = (loopMode + 1) % 2;
-    loopBtn.textContent = loopIcons[loopMode];
-    loopBtn.classList.toggle('active', loopMode === 1);
-    updateLoopStatus();
+  loopBtn.addEventListener('click',function(){
+    loop=(loop+1)%2;loopBtn.textContent=['🔁','🔂'][loop];loopBtn.classList.toggle('active',loop===1);
+    loopStatus.textContent=loop===1?'🔂 单曲循环':'';
   });
 
-  function updateLoopStatus() {
-    loopStatus.textContent = loopMode === 1 ? '🔂 单曲循环' : '';
-  }
-
-  // Progress
-  document.getElementById('progressContainer').addEventListener('click', function(e){
-    var rect = this.getBoundingClientRect();
-    var pct = (e.clientX - rect.left) / rect.width;
-    if (audio.duration) audio.currentTime = pct * audio.duration;
+  document.getElementById('progressContainer').addEventListener('click',function(e){
+    var r=this.getBoundingClientRect(),pct=(e.clientX-r.left)/r.width;
+    if(audio.duration)audio.currentTime=pct*audio.duration;
   });
 
-  audio.addEventListener('timeupdate', function(){
-    if (audio.duration) {
-      progressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
-      currentTime.textContent = formatTime(audio.currentTime);
-    }
+  audio.addEventListener('timeupdate',function(){
+    if(audio.duration){progressBar.style.width=(audio.currentTime/audio.duration*100)+'%';curTime.textContent=fmt(audio.currentTime)}
   });
-  audio.addEventListener('loadedmetadata', function(){ totalTime.textContent = formatTime(audio.duration); });
-  audio.addEventListener('ended', function(){
-    setPlaying(false); progressBar.style.width = '0%';
-    if (loopMode === 1) { playSong(currentIndex); }
-    else { next(); }
-  });
-  audio.addEventListener('error', function(){ setPlaying(false); });
+  audio.addEventListener('loadedmetadata',function(){totalTime.textContent=fmt(audio.duration)});
+  audio.addEventListener('ended',function(){setPlay(false);progressBar.style.width='0%';if(loop===1)play(idx);else next()});
+  audio.addEventListener('error',function(){setPlay(false)});
 
-  function formatTime(s) {
-    if (!s || isNaN(s)) return '0:00';
-    return Math.floor(s/60) + ':' + (Math.floor(s%60)+'').padStart(2,'0');
-  }
+  function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)+'').padStart(2,'0')}
 
-  // Keyboard shortcuts
-  document.addEventListener('keydown', function(e){
-    if (e.target.tagName === 'INPUT') return;
-    if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); toneArmIcon.click(); }
-    if (e.key === 'ArrowRight') next();
-    if (e.key === 'ArrowLeft') prev();
-    if (e.key === 'l' || e.key === 'L') loopBtn.click();
+  document.addEventListener('keydown',function(e){
+    if(e.target.tagName==='INPUT')return;
+    if(e.key===' '||e.key==='Space'){e.preventDefault();toneArmIcon.click()}
+    if(e.key==='ArrowRight')next();if(e.key==='ArrowLeft')prev();if(e.key==='l'||e.key==='L')loopBtn.click();
   });
 
-  // Media Session
-  function updateMediaSession(song) {
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: song.name, artist: song.artist + ' · ' + song.tag, album: '雨棚唱片'
-      });
-      navigator.mediaSession.setActionHandler('play', function(){ resume(); });
-      navigator.mediaSession.setActionHandler('pause', function(){ pause(); });
-      navigator.mediaSession.setActionHandler('previoustrack', prev);
-      navigator.mediaSession.setActionHandler('nexttrack', next);
+  function updateMediaSession(s){
+    if('mediaSession'in navigator){
+      navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.artist+' · '+s.tag,album:'雨棚唱片'});
+      navigator.mediaSession.setActionHandler('play',resume);navigator.mediaSession.setActionHandler('pause',pause);
+      navigator.mediaSession.setActionHandler('previoustrack',prev);navigator.mediaSession.setActionHandler('nexttrack',next);
     }
   }
 
-  // Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  }
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
 
-  // === 点歌功能 - GitHub Issues 数据互通 ===
-  reqBtn.addEventListener('click', function(){
-    var text = reqInput.value.trim();
-    if (!text) { reqInput.focus(); return; }
-    reqBtn.disabled = true; reqBtn.textContent = '发送中...';
-    
-    // 写入 GitHub Issues → 我实时可查
-    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', 'Authorization': 'token ' + GH_TOKEN},
-      body: JSON.stringify({
-        title: '🎤 翻唱请求: ' + text,
-        body: '**歌名:** ' + text + '\n**时间:** ' + new Date().toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'}),
-        labels: ['翻唱请求']
-      })
+  // === 点歌功能 ===
+  reqBtn.addEventListener('click',function(){
+    var text=reqInput.value.trim();if(!text){reqInput.focus();return}
+    reqBtn.disabled=true;reqBtn.textContent='发送中...';
+
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
+      body:JSON.stringify({title:'🎤 翻唱请求: '+text,body:'歌名: '+text+'\n时间: '+new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'}),labels:['翻唱请求']})
     }).then(function(r){
-      if (r.ok) {
-        reqToast.textContent = '✅ 「' + text + '」已提交！去 Issues 页查看所有请求';
-      } else {
-        reqToast.textContent = '⚠️ 提交失败，直接告诉制作人吧';
-      }
-      reqToast.classList.add('show');
+      if(r.ok){reqToast.textContent='✅ 「'+text+'」已提交！稍后直接翻唱上线'}
+      else{reqToast.textContent='⚠️ 提交失败，直接告诉制作人'}
+      reqToast.classList.add('show');setTimeout(function(){reqToast.classList.remove('show')},4000)
     }).catch(function(){
-      reqToast.textContent = '⚠️ 网络问题，直接告诉我即可';
-      reqToast.classList.add('show');
+      reqToast.textContent='⚠️ 网络问题，直接告诉我即可';
+      reqToast.classList.add('show');setTimeout(function(){reqToast.classList.remove('show')},4000)
     });
-    
-    reqInput.value = ''; reqBtn.disabled = false; reqBtn.textContent = '点歌';
-    setTimeout(function(){ reqToast.classList.remove('show'); }, 5000);
+
+    reqInput.value='';reqBtn.disabled=false;reqBtn.textContent='点歌';
+    fetchRequests(); // 刷新列表
   });
-  reqInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') reqBtn.click(); });
+
+  reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
+
+  // === 读取所有点歌请求 ===
+  function fetchRequests(){
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues?labels=%E7%BF%BB%E5%94%B1%E8%AF%B7%E6%B1%82&state=all&sort=created&direction=desc&per_page=20',{
+      headers:{'Authorization':'token '+GH_TOKEN}
+    }).then(function(r){return r.json()}).then(function(data){
+      if(!data||!data.length){reqList.style.display='none';reqListEmpty.style.display='block';return}
+      var pending=data.filter(function(i){return i.state==='open'});
+      var done=data.filter(function(i){return i.state==='closed'});
+      var html='';
+      pending.forEach(function(issue){
+        var title=issue.title.replace('🎤 翻唱请求: ','');
+        var date=issue.created_at.substring(0,10);
+        html+='<div class="req-item"><span class="req-song">⏳ '+title+'</span><span class="req-time">'+date+'</span></div>';
+      });
+      done.slice(0,5).forEach(function(issue){
+        var title=issue.title.replace('🎤 翻唱请求: ','');
+        var date=issue.created_at.substring(0,10);
+        html+='<div class="req-item" style="border-left-color:rgba(80,200,120,.2);opacity:.5"><span class="req-song">✅ '+title+'</span><span class="req-time">'+date+'</span></div>';
+      });
+      reqItems.innerHTML=html;
+      reqList.style.display='block';
+      if(pending.length>0)reqListEmpty.style.display='none';
+      else reqListEmpty.style.display='block';
+    }).catch(function(){});
+  }
+
+  fetchRequests(); // 打开页面时自动加载
 })();
 </script>
 </body>
