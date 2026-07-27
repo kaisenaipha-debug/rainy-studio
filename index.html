@@ -47,8 +47,10 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .tag-cover{background:rgba(80,160,200,.12);color:#60a0c8}
 .tag-xichiang{background:rgba(200,80,80,.12);color:#e06080}
 .time-display{display:flex;justify-content:space-between;font-size:11px;color:#555;font-family:monospace;margin:2px 0}
-.progress-container{width:100%;height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin:4px 0;cursor:pointer;position:relative}
-.progress-bar{height:100%;background:linear-gradient(90deg,#c8a078,#a08060);border-radius:2px;width:0%;transition:width .3s linear}
+.progress-container{width:100%;height:6px;background:rgba(255,255,255,.06);border-radius:3px;margin:6px 0;cursor:pointer;position:relative}
+.progress-bar{height:100%;background:linear-gradient(90deg,#c8a078,#a08060);border-radius:3px;width:0%;position:relative;transition:none}
+.progress-thumb{position:absolute;right:-8px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#d4b898,#a08060);box-shadow:0 2px 6px rgba(0,0,0,.4);display:none;z-index:2}
+.progress-container:hover .progress-thumb{display:block}
 
 .song-list{margin-top:16px}
 .song-item{display:flex;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:2px;cursor:pointer;transition:all .2s}
@@ -108,7 +110,9 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     <div class="song-artist" id="currentArtist">点击播放</div>
     <div id="currentTag"></div>
     <div class="progress-container" id="progressContainer">
-      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-thumb" id="progressThumb"></div>
+      </div>
     </div>
     <div class="time-display">
       <span id="currentTime">0:00</span>
@@ -207,6 +211,18 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     var r=this.getBoundingClientRect(),pct=(e.clientX-r.left)/r.width;
     if(audio.duration)audio.currentTime=pct*audio.duration;
   });
+  // 拖动进度条
+  var dragging=false,progress=document.getElementById('progressContainer');
+  progress.addEventListener('mousedown',function(e){dragging=true;seek(e)});
+  document.addEventListener('mousemove',function(e){if(dragging){seek(e)}});
+  document.addEventListener('mouseup',function(){dragging=false});
+  progress.addEventListener('touchstart',function(e){dragging=true;seek(e.touches[0])});
+  progress.addEventListener('touchmove',function(e){if(dragging){seek(e.touches[0]);e.preventDefault()}});
+  progress.addEventListener('touchend',function(){dragging=false});
+  function seek(e){
+    var r=progress.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    if(audio.duration){audio.currentTime=pct*audio.duration;progressBar.style.width=(pct*100)+'%'}
+  }
 
   audio.addEventListener('timeupdate',function(){
     if(audio.duration){progressBar.style.width=(audio.currentTime/audio.duration*100)+'%';curTime.textContent=fmt(audio.currentTime)}
