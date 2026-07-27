@@ -200,6 +200,7 @@ body {
   var vinyl = document.getElementById('vinylDisc');
   var toneArm = document.getElementById('toneArm');
   var toneArmIcon = document.getElementById('toneArmIcon');
+  var GH_TOKEN = 'gho_Jp2YztI3XHZDv2t9mORz0tPL8cDCX0o';
   var prevBtn = document.getElementById('prevBtn');
   var nextBtn = document.getElementById('nextBtn');
   var loopBtn = document.getElementById('loopBtn');
@@ -336,14 +337,34 @@ body {
     navigator.serviceWorker.register('sw.js').catch(function(){});
   }
 
-  // === 点歌功能 ===
+  // === 点歌功能 - GitHub Issues 数据互通 ===
   reqBtn.addEventListener('click', function(){
     var text = reqInput.value.trim();
     if (!text) { reqInput.focus(); return; }
+    reqBtn.disabled = true; reqBtn.textContent = '发送中...';
     
-    reqToast.textContent = '✅ 点歌已记录！告诉制作人：我想翻唱「' + text + '」';
-    reqToast.classList.add('show');
-    reqInput.value = '';
+    // 写入 GitHub Issues → 我实时可查
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'token ' + GH_TOKEN},
+      body: JSON.stringify({
+        title: '🎤 翻唱请求: ' + text,
+        body: '**歌名:** ' + text + '\n**时间:** ' + new Date().toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'}),
+        labels: ['翻唱请求']
+      })
+    }).then(function(r){
+      if (r.ok) {
+        reqToast.textContent = '✅ 「' + text + '」已提交！去 Issues 页查看所有请求';
+      } else {
+        reqToast.textContent = '⚠️ 提交失败，直接告诉制作人吧';
+      }
+      reqToast.classList.add('show');
+    }).catch(function(){
+      reqToast.textContent = '⚠️ 网络问题，直接告诉我即可';
+      reqToast.classList.add('show');
+    });
+    
+    reqInput.value = ''; reqBtn.disabled = false; reqBtn.textContent = '点歌';
     setTimeout(function(){ reqToast.classList.remove('show'); }, 5000);
   });
   reqInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') reqBtn.click(); });
