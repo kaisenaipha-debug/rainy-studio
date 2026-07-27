@@ -272,6 +272,17 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 
   reqBtn.addEventListener('click', function(){
     var text=reqInput.value.trim();if(!text){reqInput.focus();return}
+    // 检查是否已存在
+    var exists=false;
+    songs.forEach(function(s){
+      if(text.includes(s.name)||s.name.includes(text))exists=true;
+    });
+    if(exists){
+      reqToast.textContent='⚠️ 「'+text+'」已经在歌单里了，直接去听吧！';
+      reqToast.classList.add('show');
+      setTimeout(function(){reqToast.classList.remove('show')},4000);
+      reqInput.value='';return;
+    }
     ALL_REQUESTS.unshift({song:text, time:new Date().toLocaleString('zh-CN'), ts:Date.now()});
     renderRequests();
     
