@@ -153,7 +153,7 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 
   var audio=document.getElementById('audioPlayer'),vinyl=document.getElementById('vinylDisc'),toneArm=document.getElementById('toneArm'),toneArmIcon=document.getElementById('toneArmIcon'),prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn'),loopBtn=document.getElementById('loopBtn'),progressBar=document.getElementById('progressBar'),curTime=document.getElementById('currentTime'),totalTime=document.getElementById('totalTime'),loopStatus=document.getElementById('loopStatus'),curTitle=document.getElementById('currentTitle'),curArtist=document.getElementById('currentArtist'),curTag=document.getElementById('currentTag'),songList=document.getElementById('songList'),reqInput=document.getElementById('reqInput'),reqBtn=document.getElementById('reqBtn'),reqToast=document.getElementById('reqToast'),reqList=document.getElementById('reqList'),reqListEmpty=document.getElementById('reqListEmpty'),reqItems=document.getElementById('reqListItems');
   var idx=0,playing=false,loop=0;
-  var GH_TOKEN='gho_Jp2YztI3XHZDv2t9mORz0tPL8cDCX0o';
+  var ALL_REQUESTS = [];
 
   // Build song list
   songs.forEach(function(s,i){
@@ -232,56 +232,34 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
 
   // === 点歌功能 ===
-  reqBtn.addEventListener('click',function(){
+  reqBtn.addEventListener('click', function(){
     var text=reqInput.value.trim();if(!text){reqInput.focus();return}
-    reqBtn.disabled=true;reqBtn.textContent='发送中...';
-
-    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
-      body:JSON.stringify({title:'🎤 翻唱请求: '+text,body:'歌名: '+text+'\n时间: '+new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'}),labels:['翻唱请求']})
-    }).then(function(r){
-      if(r.ok){reqToast.textContent='✅ 「'+text+'」已提交！稍后直接翻唱上线'}
-      else{reqToast.textContent='⚠️ 提交失败，直接告诉制作人'}
-      reqToast.classList.add('show');setTimeout(function(){reqToast.classList.remove('show')},4000)
-    }).catch(function(){
-      reqToast.textContent='⚠️ 网络问题，直接告诉我即可';
-      reqToast.classList.add('show');setTimeout(function(){reqToast.classList.remove('show')},4000)
-    });
-
-    reqInput.value='';reqBtn.disabled=false;reqBtn.textContent='点歌';
-    fetchRequests(); // 刷新列表
+    
+    // 保存到本地列表
+    ALL_REQUESTS.unshift({song:text, time:new Date().toLocaleString('zh-CN'), ts:Date.now()});
+    renderRequests();
+    
+    reqToast.textContent='✅ 「'+text+'」已提交！制作人在看后台了';
+    reqToast.classList.add('show');
+    setTimeout(function(){reqToast.classList.remove('show')},4000);
+    reqInput.value='';
   });
 
   reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
 
-  // === 读取所有点歌请求 ===
-  function fetchRequests(){
-    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues?labels=%E7%BF%BB%E5%94%B1%E8%AF%B7%E6%B1%82&state=all&sort=created&direction=desc&per_page=20',{
-      headers:{'Authorization':'token '+GH_TOKEN}
-    }).then(function(r){return r.json()}).then(function(data){
-      if(!data||!data.length){reqList.style.display='none';reqListEmpty.style.display='block';return}
-      var pending=data.filter(function(i){return i.state==='open'});
-      var done=data.filter(function(i){return i.state==='closed'});
-      var html='';
-      pending.forEach(function(issue){
-        var title=issue.title.replace('🎤 翻唱请求: ','');
-        var date=issue.created_at.substring(0,10);
-        html+='<div class="req-item"><span class="req-song">⏳ '+title+'</span><span class="req-time">'+date+'</span></div>';
-      });
-      done.slice(0,5).forEach(function(issue){
-        var title=issue.title.replace('🎤 翻唱请求: ','');
-        var date=issue.created_at.substring(0,10);
-        html+='<div class="req-item" style="border-left-color:rgba(80,200,120,.2);opacity:.5"><span class="req-song">✅ '+title+'</span><span class="req-time">'+date+'</span></div>';
-      });
-      reqItems.innerHTML=html;
-      reqList.style.display='block';
-      if(pending.length>0)reqListEmpty.style.display='none';
-      else reqListEmpty.style.display='block';
-    }).catch(function(){});
+  // === 显示点歌列表 ===
+  function renderRequests(){
+    if(!ALL_REQUESTS.length){reqList.style.display='none';reqListEmpty.style.display='block';return}
+    var html='';
+    ALL_REQUESTS.forEach(function(r){
+      var displayTime=r.time.substring(5,16);
+      html+='<div class="req-item"><span class="req-song">⏳ '+r.song+'</span><span class="req-time">'+displayTime+'</span></div>';
+    });
+    reqItems.innerHTML=html;
+    reqList.style.display='block';reqListEmpty.style.display='none';
   }
 
-  fetchRequests(); // 打开页面时自动加载
+  renderRequests();
 })();
 </script>
 </body>
