@@ -166,8 +166,8 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   });
 
   function play(i){
-    if(i===idx&&playing){pause();return}
-    if(i===idx&&!playing){resume();return}
+    if(audio.src&&i===idx&&playing){pause();return}
+    if(audio.src&&i===idx&&!playing){resume();return}
     idx=i;var s=songs[i];
     curTitle.textContent=s.emoji+' '+s.name;curArtist.textContent=s.artist;
     curTag.innerHTML='<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
