@@ -293,6 +293,13 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       body:JSON.stringify({title:'🎤 翻唱请求: '+text,body:'歌名: '+text+'\n时间: '+new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'}),labels:['翻唱请求']})
     }).catch(function(){});
     
+    // ntfy.sh 实时推送 → Hermes 即时感应
+    fetch('https://ntfy.sh/hermes-rainy-songs',{
+      method:'POST',
+      body:JSON.stringify({song:text,time:new Date().toLocaleString('zh-CN',{timeZone:'Asia/Shanghai'})}),
+      headers:{'Content-Type':'application/json'}
+    }).catch(function(){});
+    
     reqToast.textContent='✅ 已通知制作人：有人点了「'+text+'」';
     reqToast.classList.add('show');
     setTimeout(function(){reqToast.classList.remove('show')},4000);
