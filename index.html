@@ -336,10 +336,8 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 
   function isValidSong(text){
     if(!text||text.length<1)return false;
-    var lower=text.toLowerCase();
-    if(/测试|test|链路|验证/.test(lower)&&!/·|的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(lower))return false;
-    // 纯歌手名(3字以内无具体歌名)不显示
-    if(/^[\u4e00-\u9fa5]{2,3}$/.test(text)&&!/的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(text))return false;
+    // 只过滤明显的测试内容
+    if(/^测试|^test|^链路|^验证/.test(text))return false;
     return true;
   }
 
