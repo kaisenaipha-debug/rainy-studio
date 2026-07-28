@@ -160,6 +160,20 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     <div class="req-list-empty" id="reqListEmpty" style="display:block">还没有人点歌，快来当第一个吧</div>
   </div>
 
+  <!-- 故事成歌 -->
+  <div class="request-section" style="margin-top:16px;border-color:rgba(200,160,120,.15);background:linear-gradient(135deg,rgba(200,160,120,.04),rgba(160,128,96,.01))">
+    <div class="req-title">📖 故事成歌 · 把你的故事写成一首歌</div>
+    <div style="font-size:12px;color:#777;text-align:center;margin-bottom:12px;line-height:1.5">
+      你讲故事，我帮你写成歌。爱情、友情、遗憾、感动……<br>把你的故事留下来，我用音乐替你记住。
+    </div>
+    <textarea class="req-input" id="storyInput" placeholder="把你的故事写在这里……&#10;&#10;比如：那天雨很大，她撑着伞站在校门口等我。&#10;三年了，每次听到那首歌都会想起那个画面。&#10;如果我们还能再见一面，我想告诉她……" style="width:100%;height:100px;resize:vertical;margin-bottom:8px;font-size:13px;line-height:1.5" maxlength="500"></textarea>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="req-input" id="storyNameInput" placeholder="你的称呼（可选）" maxlength="20" style="flex:0.4;font-size:12px">
+      <button class="req-btn" id="storyBtn" style="flex:0.6">✍️ 交给音乐人</button>
+    </div>
+    <div class="req-toast" id="storyToast"></div>
+  </div>
+
   <div class="footer">
     <div class="float-tip">💡 浮窗播放：右上角···→浮窗→退出微信也能继续听</div>
     <p>RAINY STUDIO RECORDS</p>
@@ -332,6 +346,55 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   });
 
   reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
+
+  // === 故事成歌 ===
+  var storyInput=document.getElementById('storyInput'),storyNameInput=document.getElementById('storyNameInput'),storyBtn=document.getElementById('storyBtn'),storyToast=document.getElementById('storyToast');
+
+  storyBtn.addEventListener('click', function(){
+    var text=storyInput.value.trim();
+    if(!text||text.length<10){
+      storyToast.textContent='⚠️ 多写一点吧，让我了解你的故事（至少10个字）';
+      storyToast.classList.add('show');
+      setTimeout(function(){storyToast.classList.remove('show')},4000);
+      storyInput.focus();return;
+    }
+    var name=storyNameInput.value.trim()||'匿名';
+    storyBtn.disabled=true;storyBtn.textContent='⏳ 发送中…';
+
+    // GitHub Issue
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
+      body:JSON.stringify({
+        title:'📖 故事成歌: '+name,
+        body:'## 讲述者\n'+name+'\n\n## 故事\n'+text+'\n\n---\n_来自雨棚唱片点歌台_',
+        labels:['故事成歌']
+      })
+    }).then(function(){
+      // ntfy.sh 即时推送
+      return fetch('https://ntfy.sh/hermes-rainy-songs',{
+        method:'POST',
+        body:JSON.stringify({type:'story',name:name,story:text.substring(0,100)+(text.length>100?'…':'')}),
+        headers:{'Content-Type':'application/json'}
+      });
+    }).then(function(){
+      storyToast.textContent='✅ 故事已送达音乐人！我会尽快联系你，把故事变成歌 🎵';
+      storyToast.classList.add('show');
+      setTimeout(function(){storyToast.classList.remove('show')},5000);
+      storyInput.value='';storyNameInput.value='';
+      storyBtn.disabled=false;storyBtn.textContent='✍️ 交给音乐人';
+    }).catch(function(){
+      storyToast.textContent='✅ 故事已收到！我会尽快联系你 🎵';
+      storyToast.classList.add('show');
+      setTimeout(function(){storyToast.classList.remove('show')},5000);
+      storyInput.value='';
+      storyBtn.disabled=false;storyBtn.textContent='✍️ 交给音乐人';
+    });
+  });
+
+  storyInput.addEventListener('input',function(){
+    storyBtn.disabled=this.value.trim().length<10;
+  });
 
   // === 显示点歌列表 === 轮播版
   var carouselTimer=null,carouselIdx=0,carouselItems=[];
