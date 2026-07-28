@@ -168,8 +168,9 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     </div>
     <textarea class="req-input" id="storyInput" placeholder="把你想说的写下来……不用写得很长，也不用很有文采。&#10;&#10;比如：那个雨天，校门口，她撑着伞等了很久。&#10;比如：他走的那天，我没说出口的那句话。&#10;比如：每次听到那首歌，就会想起一个人。&#10;&#10;告诉我：这是关于谁的？发生在哪？你当时什么感觉？" style="width:100%;height:100px;resize:vertical;margin-bottom:8px;font-size:13px;line-height:1.5" maxlength="500"></textarea>
     <div style="display:flex;gap:8px;align-items:center">
-      <input class="req-input" id="storyNameInput" placeholder="你的称呼（可选）" maxlength="20" style="flex:0.4;font-size:12px">
-      <button class="req-btn" id="storyBtn" style="flex:0.6">✍️ 交给音乐人</button>
+      <input class="req-input" id="storyNameInput" placeholder="你的称呼（可选）" maxlength="20" style="flex:0.25;font-size:12px">
+      <input class="req-input" id="storyContactInput" placeholder="微信或手机号（必填，不然歌写好了找不到你）" maxlength="30" style="flex:0.4;font-size:12px">
+      <button class="req-btn" id="storyBtn" style="flex:0.35">✍️ 交给音乐人</button>
     </div>
     <div class="req-toast" id="storyToast"></div>
   </div>
@@ -359,28 +360,27 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
 
   // === 故事成歌 ===
-  var storyInput=document.getElementById('storyInput'),storyNameInput=document.getElementById('storyNameInput'),storyBtn=document.getElementById('storyBtn'),storyToast=document.getElementById('storyToast');
+  var storyInput=document.getElementById('storyInput'),storyNameInput=document.getElementById('storyNameInput'),storyContactInput=document.getElementById('storyContactInput'),storyBtn=document.getElementById('storyBtn'),storyToast=document.getElementById('storyToast');
 
   storyBtn.addEventListener('click', function(){
-    var text=storyInput.value.trim();
-    if(!text||text.length<10){
-      storyToast.textContent='⚠️ 多写一点吧，让我了解你的故事（至少10个字）';
-      storyToast.classList.add('show');
-      setTimeout(function(){storyToast.classList.remove('show')},4000);
-      storyInput.focus();return;
-    }
-    var name=storyNameInput.value.trim()||'匿名';
-    storyBtn.disabled=true;storyBtn.textContent='⏳ 发送中…';
+      var text=storyInput.value.trim();if(!text||text.length<10){
+        storyToast.textContent='⚠️ 多写一点吧，让我了解你的故事（至少10个字）';storyToast.classList.add('show');setTimeout(function(){storyToast.classList.remove('show')},4000);storyInput.focus();return;
+      }
+      var contact=storyContactInput.value.trim();if(!contact){
+        storyToast.textContent='⚠️ 留个微信或手机号，不然歌写好了找不到你';storyToast.classList.add('show');setTimeout(function(){storyToast.classList.remove('show')},4000);storyContactInput.focus();return;
+      }
+      var name=storyNameInput.value.trim()||'匿名';
+      storyBtn.disabled=true;storyBtn.textContent='⏳ 发送中…';
 
-    // GitHub Issue
-    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
-      body:JSON.stringify({
-        title:'📖 故事成歌: '+name,
-        body:'## 讲述者\n'+name+'\n\n## 故事\n'+text+'\n\n---\n_来自雨棚唱片点歌台_',
-        labels:['故事成歌']
-      })
+      // GitHub Issue
+      fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
+        body:JSON.stringify({
+          title:'📖 故事成歌: '+name,
+          body:'## 讲述者\n'+name+'\n\n## 联系方式\n'+contact+'\n\n## 故事\n'+text+'\n\n---\n_来自雨棚唱片点歌台_',
+          labels:['故事成歌']
+        })
     }).then(function(){
       // ntfy.sh 即时推送
       return fetch('https://ntfy.sh/hermes-rainy-songs',{
