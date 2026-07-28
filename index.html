@@ -52,17 +52,17 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .progress-thumb{position:absolute;right:-8px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#d4b898,#a08060);box-shadow:0 2px 6px rgba(0,0,0,.4);display:none;z-index:2}
 .progress-container:hover .progress-thumb{display:block}
 
-.song-list{margin-top:16px}
-.song-item{display:flex;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:2px;cursor:pointer;transition:all .2s}
+.song-list{margin-top:12px;overflow:hidden;touch-action:pan-y}
+.song-item{display:flex;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:1px;cursor:pointer;transition:all .2s}
 .song-item:active{background:rgba(255,255,255,.04)}
 .song-item.active{background:rgba(200,160,120,.06);border:1px solid rgba(200,160,120,.1)}
-.song-num{font-size:11px;color:#555;width:22px;flex-shrink:0}
-.song-emoji{font-size:14px;margin-right:10px;flex-shrink:0}
+.song-num{font-size:10px;color:#555;width:18px;flex-shrink:0}
+.song-emoji{font-size:12px;margin-right:8px;flex-shrink:0}
 .song-meta{flex:1;min-width:0}
-.song-name{font-size:13px;color:#d0d0d0;margin-bottom:1px}
+.song-name{font-size:12px;color:#d0d0d0;margin-bottom:0}
 .song-item.active .song-name{color:#c8a078}
-.song-artist-name{font-size:11px;color:#666}
-.song-time{font-size:11px;color:#555;flex-shrink:0;margin-left:6px}
+.song-artist-name{font-size:10px;color:#666}
+.song-time{font-size:10px;color:#555;flex-shrink:0;margin-left:6px}
 
 .request-section{margin-top:24px;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:14px}
 .req-title{font-size:13px;color:#888;text-align:center;margin-bottom:12px;letter-spacing:1px}
@@ -245,6 +245,22 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     }
     pageDots.style.display=totalPages<=1?'none':'flex';
   }
+
+  // === 左右滑动翻页 ===
+  var swipeStartX=0,swipeStartY=0;
+  songList.addEventListener('touchstart',function(e){
+    swipeStartX=e.touches[0].clientX;
+    swipeStartY=e.touches[0].clientY;
+  });
+  songList.addEventListener('touchend',function(e){
+    var dx=e.changedTouches[0].clientX-swipeStartX;
+    var dy=e.changedTouches[0].clientY-swipeStartY;
+    if(Math.abs(dx)<Math.abs(dy)*1.5)return; // vertical scroll, ignore
+    var sorted=getSortedSongs();
+    var totalPages=Math.ceil(sorted.length/SONGS_PER_PAGE);
+    if(dx<-50&&currentPage<totalPages-1){currentPage++;renderSongs()}
+    if(dx>50&&currentPage>0){currentPage--;renderSongs()}
+  });
 
   function play(i){
     if(audio.src&&i===idx&&playing){pause();return}
