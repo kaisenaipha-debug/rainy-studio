@@ -78,17 +78,30 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .req-list{margin-top:14px}
 .req-list-title{font-size:12px;color:#777;margin-bottom:8px;letter-spacing:1px}
 .req-list-empty{font-size:12px;color:#555;text-align:center;padding:12px}
-.req-carousel{position:relative;margin-top:14px;min-height:60px}
-.req-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;text-align:center;transition:all .3s;display:none;animation:fadeIn .3s}
-.req-card.active{display:block}
-.req-card .card-song{font-size:15px;font-weight:500;color:#e0e0e0;margin-bottom:4px}
-.req-card .card-status{font-size:11px;letter-spacing:1px}
-.req-card .card-status.done{color:#60c080}
-.req-card .card-status.pending{color:#c8a078}
-.req-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
-.req-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);cursor:pointer;transition:all .3s}
-.req-dot.active{background:#c8a078;width:18px;border-radius:3px}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.req-carousel{position:relative;margin-top:14px;min-height:88px}
+.req-cards-wrap{position:relative;overflow:hidden;border-radius:14px}
+.req-card{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.97);transition:all .45s cubic-bezier(.4,0,.2,1);pointer-events:none;border-radius:14px;padding:18px 20px;background:linear-gradient(135deg,rgba(200,160,120,.06),rgba(160,128,96,.03));border:1px solid rgba(200,160,120,.1);overflow:hidden}
+.req-card.active{position:relative;opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.req-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c8a078,transparent)}
+.req-card-inner{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.req-card-emoji{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:rgba(200,160,120,.1);border:1px solid rgba(200,160,120,.08)}
+.req-card-emoji.done{background:rgba(80,200,120,.1);border-color:rgba(80,200,120,.08)}
+.req-card-info{flex:1;min-width:0}
+.req-card-name{font-size:16px;font-weight:600;color:#e8e0d8;line-height:1.3;margin-bottom:2px}
+.req-card-artist{font-size:11px;color:#777;margin-bottom:6px}
+.req-card-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 10px;border-radius:20px;letter-spacing:.5px;font-weight:500}
+.req-card-badge.done{background:rgba(80,200,120,.12);color:#60c080;border:1px solid rgba(80,200,120,.15)}
+.req-card-badge.pending{background:rgba(200,160,120,.12);color:#c8a078;border:1px solid rgba(200,160,120,.15)}
+.req-card-badge .icon{font-size:9px}
+.req-card-time{font-size:9px;color:#555;margin-top:4px}
+/* Decorative music notes */
+.req-card::after{content:'♫';position:absolute;bottom:-6px;right:8px;font-size:48px;color:rgba(200,160,120,.04);line-height:1;pointer-events:none}
+.req-dots{display:flex;justify-content:center;gap:5px;margin-top:10px}
+.req-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.08);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.req-dot.active{width:20px;border-radius:3px;background:linear-gradient(90deg,#c8a078,#d4b898);box-shadow:0 0 8px rgba(200,160,120,.2)}
+.req-dot:hover{background:rgba(255,255,255,.15)}
+@keyframes cardEnter{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.req-card.active{animation:cardEnter .4s cubic-bezier(.4,0,.2,1)}
 
 .footer{text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.03)}
 .footer p{font-size:10px;color:#444;letter-spacing:2px}
@@ -139,7 +152,9 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     </div>
     <div class="req-toast" id="reqToast"></div>
     <div class="req-carousel" id="reqCarousel" style="display:none">
-      <div id="reqCards"></div>
+      <div class="req-cards-wrap" id="reqCardsWrap">
+        <div id="reqCards"></div>
+      </div>
       <div class="req-dots" id="reqDots"></div>
     </div>
     <div class="req-list-empty" id="reqListEmpty" style="display:block">还没有人点歌，快来当第一个吧</div>
@@ -317,24 +332,36 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
 
   // === 显示点歌列表 === 轮播版
-  var carouselTimer=null,carouselIdx=0;
+  var carouselTimer=null,carouselIdx=0,carouselItems=[];
 
   function isValidSong(text){
     if(!text||text.length<1)return false;
     var lower=text.toLowerCase();
-    if(/测试|test|链路|验证|王菲$/.test(lower)&&!/·|的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(lower))return false;
+    if(/测试|test|链路|验证/.test(lower)&&!/·|的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(lower))return false;
+    // 纯歌手名(3字以内无具体歌名)不显示
+    if(/^[\u4e00-\u9fa5]{2,3}$/.test(text)&&!/的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(text))return false;
     return true;
   }
 
-  function songExists(text){
+  function matchSong(text){
     for(var i=0;i<songs.length;i++){
-      if(text.includes(songs[i].name)||songs[i].name.includes(text))return true;
-      if(text.includes(songs[i].artist)&&songs[i].artist&&text.length<=5)return true;
+      if(text.includes(songs[i].name)||songs[i].name.includes(text))return songs[i];
+      if(text.includes(songs[i].artist)&&songs[i].artist&&text.length<=6)return songs[i];
     }
-    return false;
+    return null;
+  }
+
+  function timeAgo(ts){
+    if(!ts)return '';
+    var now=Date.now(),diff=now-ts;
+    if(diff<60000)return '刚刚';
+    if(diff<3600000)return Math.floor(diff/60000)+'分钟前';
+    if(diff<86400000)return Math.floor(diff/3600000)+'小时前';
+    return Math.floor(diff/86400000)+'天前';
   }
 
   function renderCarousel(items){
+    carouselItems=items;
     reqCards.innerHTML='';reqDots.innerHTML='';
     if(!items||items.length===0){
       reqCarousel.style.display='none';reqListEmpty.style.display='block';
@@ -342,13 +369,22 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       return;
     }
     reqCarousel.style.display='block';reqListEmpty.style.display='none';
+    // Set min-height based on number of cards for smooth positioning
+    reqCarousel.style.minHeight='88px';
 
     items.forEach(function(item,i){
+      var matched=item.matchedSong;
+      var emoji=matched?matched.emoji:(item.done?'✅':'🎤');
+      var artist=item.artist||(matched?matched.artist:'');
+      var className='req-card'+(i===0?' active':'');
+      var badgeClass=item.done?'done':'pending';
+      var badgeIcon=item.done?'✓':'⏳';
+      var badgeText=item.done?'已翻唱':'待翻唱';
+      var timeText=item.time?timeAgo(item.ts):'';
+
       var card=document.createElement('div');
-      card.className='req-card'+(i===0?' active':'');
-      var sc=item.done?'done':'pending';
-      var st=item.done?'✅ 已翻唱':'⏳ 待翻唱';
-      card.innerHTML='<div class="card-song">🎤 '+item.song+'</div><div class="card-status '+sc+'">'+st+'</div>';
+      card.className=className;
+      card.innerHTML='<div class="req-card-inner"><div class="req-card-emoji '+(item.done?'done':'')+'">'+emoji+'</div><div class="req-card-info"><div class="req-card-name">'+item.song+'</div>'+(artist?'<div class="req-card-artist">'+artist+'</div>':'')+'<div class="req-card-badge '+badgeClass+'"><span class="icon">'+badgeIcon+'</span>'+badgeText+'</div>'+(timeText?'<div class="req-card-time">'+timeText+'</div>':'')+'</div></div>';
       reqCards.appendChild(card);
 
       var dot=document.createElement('div');
@@ -358,20 +394,28 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       reqDots.appendChild(dot);
     });
 
+    // Set container height to first card's height
+    var firstH=reqCards.querySelector('.req-card.active');
+    if(firstH)reqCarousel.style.minHeight=(firstH.offsetHeight+20)+'px';
+
     carouselIdx=0;
     if(carouselTimer)clearInterval(carouselTimer);
     if(items.length>1){
       carouselTimer=setInterval(function(){
         goCarousel((carouselIdx+1)%items.length);
-      },4000);
+      },4200);
     }
   }
 
   function goCarousel(n){
     var cards=reqCards.querySelectorAll('.req-card');
     var dots=reqDots.querySelectorAll('.req-dot');
-    if(!cards.length)return;
-    cards.forEach(function(c,i){c.classList.toggle('active',i===n)});
+    if(!cards.length||n===carouselIdx)return;
+    // Hide current
+    cards.forEach(function(c,i){
+      c.classList.toggle('active',i===n);
+      if(i===n)c.style.animation='none';
+    });
     dots.forEach(function(d,i){d.classList.toggle('active',i===n)});
     carouselIdx=n;
   }
@@ -382,19 +426,22 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       remoteData.forEach(function(issue){
         var t=issue.title.replace('🎤 翻唱请求: ','').trim();
         if(!isValidSong(t))return;
-        var done=songExists(t);
+        var matched=matchSong(t);
+        var done=matched!==null;
         if(issue.state==='closed'&&!done)return;
-        items.push({song:t,done:done,id:issue.number});
+        var ts=issue.created_at?new Date(issue.created_at).getTime():0;
+        items.push({song:t,done:done,matchedSong:matched,artist:(matched?matched.artist:''),time:true,ts:ts,id:issue.number});
       });
     }
     ALL_REQUESTS.forEach(function(r){
       if(!isValidSong(r.song))return;
-      var done=songExists(r.song);
+      var matched=matchSong(r.song);
+      var done=matched!==null;
       var dup=false;
       for(var i=0;i<items.length;i++){
         if(items[i].song===r.song){dup=true;break}
       }
-      if(!dup)items.push({song:r.song,done:done,time:r.time});
+      if(!dup)items.push({song:r.song,done:done,matchedSong:matched,artist:(matched?matched.artist:''),time:true,ts:r.ts||Date.now()});
     });
     renderCarousel(items);
   }
