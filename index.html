@@ -258,8 +258,8 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     if(Math.abs(dx)<Math.abs(dy)*1.5)return; // vertical scroll, ignore
     var sorted=getSortedSongs();
     var totalPages=Math.ceil(sorted.length/SONGS_PER_PAGE);
-    if(dx<-50&&currentPage<totalPages-1){currentPage++;renderSongs()}
-    if(dx>50&&currentPage>0){currentPage--;renderSongs()}
+    if(dx<-50){currentPage=(currentPage+1)%totalPages;renderSongs()}
+    if(dx>50){currentPage=(currentPage-1+totalPages)%totalPages;renderSongs()}
   });
 
   function play(i){
