@@ -174,6 +174,17 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     <div class="req-toast" id="storyToast"></div>
   </div>
 
+  <!-- 故事对话区 -->
+  <div class="request-section" id="storyChatSection" style="margin-top:16px;display:none;border-color:rgba(200,160,120,.12)">
+    <div class="req-title">💬 音乐人的回复</div>
+    <div id="storyChatMessages" style="margin-bottom:10px;max-height:300px;overflow-y:auto"></div>
+    <div class="req-input-group" id="storyChatInputGroup">
+      <input class="req-input" id="storyChatInput" placeholder="回复音乐人……" maxlength="200">
+      <button class="req-btn" id="storyChatBtn">发送</button>
+    </div>
+    <div class="req-toast" id="storyChatToast"></div>
+  </div>
+
   <div class="footer">
     <div class="float-tip">💡 浮窗播放：右上角···→浮窗→退出微信也能继续听</div>
     <p>RAINY STUDIO RECORDS</p>
@@ -395,6 +406,85 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   storyInput.addEventListener('input',function(){
     storyBtn.disabled=this.value.trim().length<10;
   });
+
+  // === 故事对话 ===
+  var storyIssueId=null,storyPollTimer=null;
+  var storyChatSection=document.getElementById('storyChatSection');
+  var storyChatMessages=document.getElementById('storyChatMessages');
+  var storyChatInput=document.getElementById('storyChatInput');
+  var storyChatBtn=document.getElementById('storyChatBtn');
+  var storyChatToast=document.getElementById('storyChatToast');
+
+  // 提交故事时记录 issue id
+  var _origStoryFetch = window.fetch;
+  // Hook into story submit success to store issue id
+  var _origStorySubmit = storyBtn.click;
+  storyBtn.addEventListener('click', function(){
+    // After submission completes, poll for latest issue
+    setTimeout(function(){
+      fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues?labels=%E6%95%85%E4%BA%8B%E6%88%90%E6%AD%8C&state=all&sort=created&direction=desc&per_page=1',{
+        headers:{'Authorization':'token '+GH_TOKEN}
+      }).then(function(r){return r.json()}).then(function(issues){
+        if(issues&&issues.length){
+          storyIssueId=issues[0].number;
+          storyChatSection.style.display='block';
+          loadStoryComments();
+          if(storyPollTimer)clearInterval(storyPollTimer);
+          storyPollTimer=setInterval(loadStoryComments,15000); // poll every 15s
+        }
+      }).catch(function(){});
+    },3000);
+  });
+
+  function loadStoryComments(){
+    if(!storyIssueId)return;
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues/'+storyIssueId+'/comments?sort=created&direction=asc',{
+      headers:{'Authorization':'token '+GH_TOKEN}
+    }).then(function(r){return r.json()}).then(function(comments){
+      if(!comments||!comments.length)return;
+      var html='';
+      comments.forEach(function(c){
+        var isMe=c.user.login==='kaisenaipha-debug';
+        var avatar=c.user.avatar_url;
+        var name=isMe?'🎵 音乐人 Hermes':c.user.login;
+        var time=new Date(c.created_at).toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        html+='<div style="display:flex;gap:10px;margin-bottom:12px;'+(isMe?'':'flex-direction:row-reverse')+'">'+
+          '<img src="'+avatar+'" style="width:28px;height:28px;border-radius:50%;flex-shrink:0">'+
+          '<div style="max-width:80%">'+
+            '<div style="font-size:11px;color:#888;margin-bottom:2px;text-align:'+(isMe?'left':'right')+'">'+name+' · '+time+'</div>'+
+            '<div style="background:'+(isMe?'rgba(200,160,120,.1)':'rgba(80,160,200,.1)')+';padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;color:#ddd">'+renderMarkdown(c.body)+'</div>'+
+          '</div></div>';
+      });
+      storyChatMessages.innerHTML=html;
+      storyChatMessages.scrollTop=storyChatMessages.scrollHeight;
+    }).catch(function(){});
+  }
+
+  function renderMarkdown(text){
+    return text.replace(/\n/g,'<br>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  }
+
+  storyChatBtn.addEventListener('click', function(){
+    var text=storyChatInput.value.trim();
+    if(!text||!storyIssueId)return;
+    storyChatBtn.disabled=true;
+    fetch('https://api.github.com/repos/kaisenaipha-debug/rainy-studio/issues/'+storyIssueId+'/comments',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'token '+GH_TOKEN},
+      body:JSON.stringify({body:text})
+    }).then(function(){
+      storyChatInput.value='';
+      storyChatBtn.disabled=false;
+      loadStoryComments();
+    }).catch(function(){
+      storyChatBtn.disabled=false;
+      storyChatToast.textContent='发送失败，请重试';
+      storyChatToast.classList.add('show');
+      setTimeout(function(){storyChatToast.classList.remove('show')},3000);
+    });
+  });
+
+  storyChatInput.addEventListener('keydown',function(e){if(e.key==='Enter')storyChatBtn.click()});
 
   // === 显示点歌列表 === 轮播版
   var carouselTimer=null,carouselIdx=0,carouselItems=[];
