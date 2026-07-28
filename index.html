@@ -78,9 +78,17 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 .req-list{margin-top:14px}
 .req-list-title{font-size:12px;color:#777;margin-bottom:8px;letter-spacing:1px}
 .req-list-empty{font-size:12px;color:#555;text-align:center;padding:12px}
-.req-item{display:flex;align-items:center;padding:8px 12px;margin-bottom:4px;background:rgba(255,255,255,.02);border-radius:8px;border-left:2px solid rgba(200,160,120,.2)}
-.req-item .req-song{flex:1;font-size:13px;color:#d0d0d0}
-.req-item .req-time{font-size:10px;color:#555;margin-left:4px;white-space:nowrap}
+.req-carousel{position:relative;margin-top:14px;min-height:60px}
+.req-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;text-align:center;transition:all .3s;display:none;animation:fadeIn .3s}
+.req-card.active{display:block}
+.req-card .card-song{font-size:15px;font-weight:500;color:#e0e0e0;margin-bottom:4px}
+.req-card .card-status{font-size:11px;letter-spacing:1px}
+.req-card .card-status.done{color:#60c080}
+.req-card .card-status.pending{color:#c8a078}
+.req-dots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+.req-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.1);cursor:pointer;transition:all .3s}
+.req-dot.active{background:#c8a078;width:18px;border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 .footer{text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.03)}
 .footer p{font-size:10px;color:#444;letter-spacing:2px}
@@ -130,9 +138,9 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       <button class="req-btn" id="reqBtn">点歌</button>
     </div>
     <div class="req-toast" id="reqToast"></div>
-    <div class="req-list" id="reqList" style="display:none">
-      <div class="req-list-title">📋 大家点了这些歌</div>
-      <div id="reqListItems"></div>
+    <div class="req-carousel" id="reqCarousel" style="display:none">
+      <div id="reqCards"></div>
+      <div class="req-dots" id="reqDots"></div>
     </div>
     <div class="req-list-empty" id="reqListEmpty" style="display:block">还没有人点歌，快来当第一个吧</div>
   </div>
@@ -157,7 +165,7 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     {num:'09',emoji:'🌊',name:'漂洋过海来看你',artist:'刘明湘',tag:'翻唱',tagClass:'tag-cover',file:'audio/pygh_cover.mp3',dur:'4:31'}
   ];
 
-  var audio=document.getElementById('audioPlayer'),vinyl=document.getElementById('vinylDisc'),toneArm=document.getElementById('toneArm'),toneArmIcon=document.getElementById('toneArmIcon'),prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn'),loopBtn=document.getElementById('loopBtn'),progressBar=document.getElementById('progressBar'),curTime=document.getElementById('currentTime'),totalTime=document.getElementById('totalTime'),loopStatus=document.getElementById('loopStatus'),curTitle=document.getElementById('currentTitle'),curArtist=document.getElementById('currentArtist'),curTag=document.getElementById('currentTag'),songList=document.getElementById('songList'),reqInput=document.getElementById('reqInput'),reqBtn=document.getElementById('reqBtn'),reqToast=document.getElementById('reqToast'),reqList=document.getElementById('reqList'),reqListEmpty=document.getElementById('reqListEmpty'),reqItems=document.getElementById('reqListItems');
+  var audio=document.getElementById('audioPlayer'),vinyl=document.getElementById('vinylDisc'),toneArm=document.getElementById('toneArm'),toneArmIcon=document.getElementById('toneArmIcon'),prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn'),loopBtn=document.getElementById('loopBtn'),progressBar=document.getElementById('progressBar'),curTime=document.getElementById('currentTime'),totalTime=document.getElementById('totalTime'),loopStatus=document.getElementById('loopStatus'),curTitle=document.getElementById('currentTitle'),curArtist=document.getElementById('currentArtist'),curTag=document.getElementById('currentTag'),songList=document.getElementById('songList'),reqInput=document.getElementById('reqInput'),reqBtn=document.getElementById('reqBtn'),reqToast=document.getElementById('reqToast'),reqCarousel=document.getElementById('reqCarousel'),reqCards=document.getElementById('reqCards'),reqDots=document.getElementById('reqDots'),reqListEmpty=document.getElementById('reqListEmpty');
   var idx=0,playing=false,loop=0;
   var ALL_REQUESTS = [];
 
@@ -308,26 +316,87 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
 
   reqInput.addEventListener('keydown',function(e){if(e.key==='Enter')reqBtn.click()});
 
-  // === 显示点歌列表 ===
+  // === 显示点歌列表 === 轮播版
+  var carouselTimer=null,carouselIdx=0;
+
+  function isValidSong(text){
+    if(!text||text.length<1)return false;
+    var lower=text.toLowerCase();
+    if(/测试|test|链路|验证|王菲$/.test(lower)&&!/·|的|我|你|心|雨|月|云|风|海|情|爱|梦|夜|光|花/.test(lower))return false;
+    return true;
+  }
+
+  function songExists(text){
+    for(var i=0;i<songs.length;i++){
+      if(text.includes(songs[i].name)||songs[i].name.includes(text))return true;
+      if(text.includes(songs[i].artist)&&songs[i].artist&&text.length<=5)return true;
+    }
+    return false;
+  }
+
+  function renderCarousel(items){
+    reqCards.innerHTML='';reqDots.innerHTML='';
+    if(!items||items.length===0){
+      reqCarousel.style.display='none';reqListEmpty.style.display='block';
+      if(carouselTimer){clearInterval(carouselTimer);carouselTimer=null}
+      return;
+    }
+    reqCarousel.style.display='block';reqListEmpty.style.display='none';
+
+    items.forEach(function(item,i){
+      var card=document.createElement('div');
+      card.className='req-card'+(i===0?' active':'');
+      var sc=item.done?'done':'pending';
+      var st=item.done?'✅ 已翻唱':'⏳ 待翻唱';
+      card.innerHTML='<div class="card-song">🎤 '+item.song+'</div><div class="card-status '+sc+'">'+st+'</div>';
+      reqCards.appendChild(card);
+
+      var dot=document.createElement('div');
+      dot.className='req-dot'+(i===0?' active':'');
+      dot.dataset.idx=i;
+      dot.addEventListener('click',function(){goCarousel(parseInt(this.dataset.idx))});
+      reqDots.appendChild(dot);
+    });
+
+    carouselIdx=0;
+    if(carouselTimer)clearInterval(carouselTimer);
+    if(items.length>1){
+      carouselTimer=setInterval(function(){
+        goCarousel((carouselIdx+1)%items.length);
+      },4000);
+    }
+  }
+
+  function goCarousel(n){
+    var cards=reqCards.querySelectorAll('.req-card');
+    var dots=reqDots.querySelectorAll('.req-dot');
+    if(!cards.length)return;
+    cards.forEach(function(c,i){c.classList.toggle('active',i===n)});
+    dots.forEach(function(d,i){d.classList.toggle('active',i===n)});
+    carouselIdx=n;
+  }
+
   function renderRequests(remoteData){
-    var html='';
+    var items=[];
     if(remoteData&&remoteData.length){
-      remoteData.forEach(function(i){
-        if(i.state==='open'){
-          var t=i.title.replace('🎤 翻唱请求: ','');
-          html+='<div class="req-item"><span class="req-song">⏳ '+t+'</span></div>';
-        }
-      });
-      remoteData.filter(function(i){return i.state==='closed'}).slice(0,3).forEach(function(i){
-        var t=i.title.replace('🎤 翻唱请求: ','');
-        html+='<div class="req-item" style="opacity:.4"><span class="req-song">✅ '+t+'</span></div>';
+      remoteData.forEach(function(issue){
+        var t=issue.title.replace('🎤 翻唱请求: ','').trim();
+        if(!isValidSong(t))return;
+        var done=songExists(t);
+        if(issue.state==='closed'&&!done)return;
+        items.push({song:t,done:done,id:issue.number});
       });
     }
     ALL_REQUESTS.forEach(function(r){
-      html+='<div class="req-item"><span class="req-song">⏳ '+r.song+'</span><span class="req-time">'+r.time.substring(5,16)+'</span></div>';
+      if(!isValidSong(r.song))return;
+      var done=songExists(r.song);
+      var dup=false;
+      for(var i=0;i<items.length;i++){
+        if(items[i].song===r.song){dup=true;break}
+      }
+      if(!dup)items.push({song:r.song,done:done,time:r.time});
     });
-    if(html){reqItems.innerHTML=html;reqList.style.display='block';reqListEmpty.style.display='none'}
-    else{reqList.style.display='none';reqListEmpty.style.display='block'}
+    renderCarousel(items);
   }
 
   // 页面加载时拉取已有请求
