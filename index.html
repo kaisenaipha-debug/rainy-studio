@@ -326,12 +326,18 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   audio.addEventListener('loadedmetadata',function(){totalTime.textContent=fmt(audio.duration)});
   audio.addEventListener('ended',function(){
     setPlay(false);progressBar.style.width='0%';
-    var n=(idx+1)%songs.length;
-    var s=songs[n];
-    audio.src=s.file;audio.load();
-    setTimeout(function(){
-      audio.play().then(function(){idx=n;setPlay(true);addPlay(n);updateSong(n)}).catch(function(){});
-    },200);
+    if(loop===1){
+      // 单曲循环:回到开头重播，不重新加载
+      audio.currentTime=0;
+      audio.play().then(function(){setPlay(true)}).catch(function(){});
+    }else{
+      var n=(idx+1)%songs.length;
+      var s=songs[n];
+      audio.src=s.file;audio.load();
+      setTimeout(function(){
+        audio.play().then(function(){idx=n;setPlay(true);addPlay(n);updateSong(n)}).catch(function(){});
+      },200);
+    }
   });
   function updateSong(n){
     var s=songs[n];
