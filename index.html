@@ -472,6 +472,18 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     return true;
   }
 
+  var KNOWN_ARTISTS=['王菲','周杰伦','林俊杰','陈奕迅','邓紫棋','周深','薛之谦','李荣浩','林忆莲','张学友','刘德华','五月天','周传雄','告五人','郁可唯','HITA','张信哲','刘明湘','李佳薇','林棲','孙燕姿','梁静茹','张惠妹','那英','汪峰','朴树','许嵩','毛不易','田馥甄','任贤齐','蔡依林','刀郎','杨千嬅','陈慧琳','容祖儿','古巨基','许志安','王力宏','陶喆','方大同','陈绮贞','张悬'];
+  function isArtistOnly(t){
+    t=t.trim();
+    for(var i=0;i<KNOWN_ARTISTS.length;i++){
+      if(t===KNOWN_ARTISTS[i])return true;
+      if(t.indexOf(KNOWN_ARTISTS[i])===0&&t.length<=KNOWN_ARTISTS[i].length+2)return true;
+    }
+    for(var i=0;i<songs.length;i++){
+      if(songs[i].artist&&t===songs[i].artist)return true;
+    }
+    return false;
+  }
   function matchSong(text){
     for(var i=0;i<songs.length;i++){
       if(text.includes(songs[i].name)||songs[i].name.includes(text))return songs[i];
@@ -555,6 +567,7 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       remoteData.forEach(function(issue){
         var t=issue.title.replace('🎤 翻唱请求: ','').trim();
         if(!isValidSong(t))return;
+        if(isArtistOnly(t))return;
         var matched=matchSong(t);
         var done=matched!==null;
         if(issue.state==='closed'&&!done)return;
@@ -564,6 +577,7 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     }
     ALL_REQUESTS.forEach(function(r){
       if(!isValidSong(r.song))return;
+      if(isArtistOnly(r.song))return;
       var matched=matchSong(r.song);
       var done=matched!==null;
       var dup=false;
