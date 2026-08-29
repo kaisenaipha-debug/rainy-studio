@@ -206,6 +206,44 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   var idx=0,playing=false,loop=0;
   var ALL_REQUESTS = [];
 
+  // === CDN 多源冗余（2026-08-28 加固：听歌永不掉线）===
+  // 三级 CDN：GitHub 主站 → jsDelivr 镜像（自动同步仓库，国内可达性最好）→ Cloudflare 备用
+  // 任一源故障时 audio error 事件自动切下一个；localStorage 记住每个文件的最优源，下次直接走快的
+  var CDNS=[
+    'https://kaisenaipha-debug.github.io/rainy-studio/',
+    'https://cdn.jsdelivr.net/gh/kaisenaipha-debug/rainy-studio@main/',
+    'https://rainy-studio.pages.dev/'
+  ];
+  var _cdnFailCount=0; // 连续失败计数，3个全挂则停止重试（避免死循环）
+  function resolveSrc(file){
+    try{
+      var cached=localStorage.getItem('rainy_cdn_'+file);
+      if(cached&&CDNS.indexOf(cached)>=0)return cached+file;
+    }catch(e){}
+    return CDNS[0]+file;
+  }
+  function rememberCdn(file,base){
+    try{localStorage.setItem('rainy_cdn_'+file,base)}catch(e){}
+  }
+  audio.addEventListener('error',function(){
+    setPlay(false);
+    // 换下一个 CDN 重试（多源冗余：单个 CDN 挂了不影响听歌）
+    var s=songs[idx];if(!s)return;
+    // 定位当前 src 用的哪个 CDN → 取下一个（不能靠计数推导，记忆源失败时计数会指向同一个源）
+    var cur=0;
+    for(var i=0;i<CDNS.length;i++){
+      if(audio.src.indexOf(CDNS[i])===0){cur=i;break;}
+    }
+    var next=(cur+1)%CDNS.length;
+    _cdnFailCount++;
+    if(_cdnFailCount>=CDNS.length){_cdnFailCount=0;return;} // 全部失败，停止（下次点击会从最优源重新开始）
+    audio.src=CDNS[next]+s.file;audio.load();
+    audio.play().then(function(){
+      setPlay(true);_cdnFailCount=0;
+      rememberCdn(s.file,CDNS[next]);
+    }).catch(function(){});
+  });
+
   // === 播放统计 & 排序 ===
   var SONGS_PER_PAGE=6,currentPage=0;
   var pageDots=document.createElement('div');pageDots.className='page-dots';
@@ -274,11 +312,11 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     curTitle.textContent=s.emoji+' '+s.name;curArtist.textContent=s.artist;
     curTag.innerHTML='<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
     updateMediaSession(s);
-    audio.src=s.file;audio.load();
+    audio.src=resolveSrc(s.file);audio.load();
     // 预加载下一首（弱网/断网时减少卡顿）
     try{
       var nxt=songs[(i+1)%songs.length];
-      var pre=new Audio();pre.preload='auto';pre.src=nxt.file;
+      var pre=new Audio();pre.preload='auto';pre.src=resolveSrc(nxt.file);
       window._rainyPre=pre;
     }catch(e){}
     audio.play().then(function(){setPlay(true)}).catch(function(){setPlay(false)});
@@ -332,7 +370,18 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   audio.addEventListener('timeupdate',function(){
     if(audio.duration){progressBar.style.width=(audio.currentTime/audio.duration*100)+'%';curTime.textContent=fmt(audio.currentTime)}
   });
-  audio.addEventListener('loadedmetadata',function(){totalTime.textContent=fmt(audio.duration)});
+  audio.addEventListener('loadedmetadata',function(){
+    totalTime.textContent=fmt(audio.duration);
+    // 记录当前文件的可用 CDN（这次加载成功 → 下次直接走这个源）
+    try{
+      var s=songs[idx];
+      if(s&&audio.src){
+        for(var i=0;i<CDNS.length;i++){
+          if(audio.src.indexOf(CDNS[i]+s.file)===0){rememberCdn(s.file,CDNS[i]);break;}
+        }
+      }
+    }catch(e){}
+  });
   audio.addEventListener('ended',function(){
     setPlay(false);progressBar.style.width='0%';
     if(loop===1){
@@ -342,7 +391,7 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     }else{
       var n=(idx+1)%songs.length;
       var s=songs[n];
-      audio.src=s.file;audio.load();
+      audio.src=resolveSrc(s.file);audio.load();
       setTimeout(function(){
         audio.play().then(function(){idx=n;setPlay(true);addPlay(n);updateSong(n)}).catch(function(){});
       },200);
