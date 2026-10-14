@@ -217,10 +217,9 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
   ];
   var _cdnFailCount=0; // 连续失败计数，3个全挂则停止重试（避免死循环）
   function resolveSrc(file){
-    try{
-      var cached=localStorage.getItem('rainy_cdn_'+file);
-      if(cached&&CDNS.indexOf(cached)>=0)return cached+file;
-    }catch(e){}
+    // 2026-10-10：不再用跨会话记住的源开局。宿主反馈"之前不卡、现在又卡"——
+    // 一旦某个慢源/间歇源被记进 localStorage，之后每首歌都从慢源开局（自我钉死）。
+    // 现在一律 GitHub 主站先行；该源失败由 error 事件自动切下一个源。
     return CDNS[0]+file;
   }
   function rememberCdn(file,base){
@@ -244,33 +243,6 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
       rememberCdn(s.file,CDNS[next]);
     }).catch(function(){});
   });
-
-  // === 卡顿看门狗（2026-10-10）===
-  // error 事件只管"源挂了"，管不了"源慢/卡"。跨境链路下 waiting/stalled 会一直转圈，
-  // 这里：停滞 > 8s 就切下一个 CDN，并在 loadedmetadata 后跳到原位置续播。
-  var _stallTimer=null,_stallN=0;
-  function armStallWatch(){
-    clearTimeout(_stallTimer);
-    _stallTimer=setTimeout(function(){
-      if(!playing)return;                                  // 已暂停/停止 → 不动
-      if(!audio.paused&&audio.readyState>=3)return;        // 已自行恢复（playing 事件也会清定时器，双保险）
-      var s=songs[idx];if(!s)return;
-      _stallN++;
-      if(_stallN>CDNS.length*2){_stallN=0;return}          // 防无限切换
-      var cur=0;
-      for(var i=0;i<CDNS.length;i++){if(audio.src.indexOf(CDNS[i])===0){cur=i;break}}
-      var next=(cur+1)%CDNS.length,at=audio.currentTime||0;
-      var onMeta=function(){
-        audio.removeEventListener('loadedmetadata',onMeta);
-        try{if(at>0&&isFinite(at))audio.currentTime=at}catch(e){}
-        audio.play().then(function(){setPlay(true);rememberCdn(s.file,CDNS[next]);_stallN=0}).catch(function(){});
-      };
-      audio.addEventListener('loadedmetadata',onMeta);
-      audio.src=CDNS[next]+s.file;audio.load();
-    },8000);
-  }
-  ['waiting','stalled'].forEach(function(ev){audio.addEventListener(ev,function(){if(playing)armStallWatch()})});
-  audio.addEventListener('playing',function(){clearTimeout(_stallTimer)});
 
   // === 播放统计 & 排序 ===
   var SONGS_PER_PAGE=6,currentPage=0;
