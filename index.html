@@ -245,6 +245,33 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     }).catch(function(){});
   });
 
+  // === 卡顿看门狗（2026-10-10）===
+  // error 事件只管"源挂了"，管不了"源慢/卡"。跨境链路下 waiting/stalled 会一直转圈，
+  // 这里：停滞 > 8s 就切下一个 CDN，并在 loadedmetadata 后跳到原位置续播。
+  var _stallTimer=null,_stallN=0;
+  function armStallWatch(){
+    clearTimeout(_stallTimer);
+    _stallTimer=setTimeout(function(){
+      if(!playing)return;                                  // 已暂停/停止 → 不动
+      if(!audio.paused&&audio.readyState>=3)return;        // 已自行恢复（playing 事件也会清定时器，双保险）
+      var s=songs[idx];if(!s)return;
+      _stallN++;
+      if(_stallN>CDNS.length*2){_stallN=0;return}          // 防无限切换
+      var cur=0;
+      for(var i=0;i<CDNS.length;i++){if(audio.src.indexOf(CDNS[i])===0){cur=i;break}}
+      var next=(cur+1)%CDNS.length,at=audio.currentTime||0;
+      var onMeta=function(){
+        audio.removeEventListener('loadedmetadata',onMeta);
+        try{if(at>0&&isFinite(at))audio.currentTime=at}catch(e){}
+        audio.play().then(function(){setPlay(true);rememberCdn(s.file,CDNS[next]);_stallN=0}).catch(function(){});
+      };
+      audio.addEventListener('loadedmetadata',onMeta);
+      audio.src=CDNS[next]+s.file;audio.load();
+    },8000);
+  }
+  ['waiting','stalled'].forEach(function(ev){audio.addEventListener(ev,function(){if(playing)armStallWatch()})});
+  audio.addEventListener('playing',function(){clearTimeout(_stallTimer)});
+
   // === 播放统计 & 排序 ===
   var SONGS_PER_PAGE=6,currentPage=0;
   var pageDots=document.createElement('div');pageDots.className='page-dots';
@@ -314,11 +341,22 @@ body{background:#0a0a0a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFo
     curTag.innerHTML='<span class="tag '+s.tagClass+'">'+s.tag+'</span>';
     updateMediaSession(s);
     audio.src=resolveSrc(s.file);audio.load();
-    // 预加载下一首（弱网/断网时减少卡顿）
+    // 预加载下一首：先只取元数据，待当前曲播放过半再真正预热
+    // 2026-10-10 诊断（宿主：「相册音乐不卡，雨棚太卡」）：原实现对每首 8–12MB 的音频
+    // 立即 preload='auto'，与正在播放的曲目抢跨境带宽 → 播放卡顿。
+    // 对照组：相册页 preload="none" + 128kbps 单曲按需加载 → 不卡。
     try{
       var nxt=songs[(i+1)%songs.length];
-      var pre=new Audio();pre.preload='auto';pre.src=resolveSrc(nxt.file);
+      var pre=new Audio();pre.preload='metadata';pre.src=resolveSrc(nxt.file);
       window._rainyPre=pre;
+      var warm=function(){
+        if(!playing||idx!==i){return}
+        var d=audio.duration;
+        if(d>0&&audio.currentTime/d>0.6){
+          try{pre.preload='auto';pre.src=resolveSrc(nxt.file);}catch(e){}
+        }else{setTimeout(warm,4000)}
+      };
+      setTimeout(warm,4000);
     }catch(e){}
     audio.play().then(function(){setPlay(true)}).catch(function(){setPlay(false)});
     addPlay(i);
